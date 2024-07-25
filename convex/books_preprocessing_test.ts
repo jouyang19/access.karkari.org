@@ -36,7 +36,7 @@ interface ProcessedBook {
     sectionTitle: string;
     title: string;
   };
-  footnotes?: any[];
+  footnotes?: object;
   isChapterStart: boolean;
   isSectionStart: boolean;
   pageContent: string;
