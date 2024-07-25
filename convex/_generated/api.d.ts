@@ -14,6 +14,9 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as books from "../books.js";
+import type * as books_preprocessing from "../books_preprocessing.js";
+import type * as books_preprocessing_test from "../books_preprocessing_test.js";
 import type * as tasks from "../tasks.js";
 
 /**
@@ -25,6 +28,9 @@ import type * as tasks from "../tasks.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  books: typeof books;
+  books_preprocessing: typeof books_preprocessing;
+  books_preprocessing_test: typeof books_preprocessing_test;
   tasks: typeof tasks;
 }>;
 export declare const api: FilterApi<
