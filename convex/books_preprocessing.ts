@@ -36,7 +36,12 @@ interface ProcessedBook {
     sectionTitle: string;
     title: string;
   };
-  footnotes?: object;
+  footnotes?: [
+    {
+      number: number;
+      content: string;
+    }
+  ];
   isChapterStart: boolean;
   isSectionStart: boolean;
   pageContent: string;
@@ -60,7 +65,9 @@ export const processBooks = action({
           doc.pageContent,
           doc.bookTitle
         );
+        console.log(response);
         const processedData = processClaudeResponse(response, doc.bookTitle);
+        console.log(processedData);
         await ctx.runMutation(api.books.create, processedData);
       } catch (error) {
         console.error(`Error processing document: ${doc.bookTitle}`, error);
@@ -87,9 +94,9 @@ async function callClaudeHaikuAPI(
   
         ${pageContent}
   
-  I need: pageContent: v.string(), pageNumber: v.float64(), remember to not include the pageNumber you extract in the pageContent string Each page will come with a title at the beginning, such as "The Foundations of the Karkariya Order", ignore it. 
+  I need: pageContent: v.string(), pageNumber: v.float64(), remember to not include the pageNumber you extract in the pageContent string. Each page will come with a title at the beginning, such as "The Foundations of the Karkariya Order", ignore it. 
   
-  A page may have footnotes, if it does then in the pageContent string demarcate the footnote with brackets like this: [[289]], and they will fit as an object into the Convex schema    field: footnotes: v.any() AND PLEASE DO NOT CHANGE THE LOCATION of the footnotes when inserting into pageContent, 
+  A page may have footnotes, if it does then in the pageContent string demarcate the footnote in line citations with brackets like this: [[289]], and they will fit as an object into the Convex schema    field: footnotes: [{number: number, content: string}] AND PLEASE DO NOT CHANGE THE LOCATION of the footnotes in-line citations when inserting into pageContent. Once extracted, do not keep the footnotes at the bottom of pageContent. The page number is at the heading. Infer new paragraphs and place [[p]] to indicate them please.
   
   Also from the pageContent I want you to remove un-necessary hyphens in words which the original content used for line breaks 
   
@@ -101,11 +108,25 @@ async function callClaudeHaikuAPI(
   
   Introduction...................................................................................13 1. The Pact (al-ʿahd)......................................................................21 The Litany (al-wird)............................................................................ 36 Spiritual Companionship (ṣuḥba)................................................... 42 The Pledge of Allegiance to God...................................................... 56 The Hadith of the Walī........................................................................ 63 The Proper Conduct of Dhikr.......................................................... 71 The General Litany (al-Wird al-ʿĀmm).......................................... 74 The Rosary (subḥa).............................................................................. 77 2. The Sacred Dance (al-ḥaḍra)..................................................99 The Basis of the Ḥaḍra........................................................................ 103 The Proper Conduct of Samāʿ.......................................................... 118 The Moaning of the Palm Trunk..................................................... 120 3. The Patched Cloak (al-muraqqaʿa)........................................125 The Basis of the Muraqqaʿa............................................................... 129 Benefits of the Muraqqaʿa.................................................................. 132 The Muraqqaʿa of Sayyidunā ʿUmar .......................................... 138 The Symbolism of Colors in the Qurʾān........................................ 140 The Garment of Reverence (libās al-taqwā)..............................146 The Story of Sayyidunā Uways al-Qaranī (d. 657)..................... 151 4. The Name (al-Ism)....................................................................157 The Legal Status of Invoking the Singular Name........................ 160 Say, Allāh!............................................................................................... 164 All that is Upon it is Passing Away................................................... 168 Recite in the Name of the Lord......................................................... 170 The Essence (Dhāt)............................................................................. 176 God's Exclusive Unity (Aḥadiyya)................................................... 179 The Hāʾ of Identity (Hāʾ al-huwiyya).............................................. 184 The Lām of Love or Contraction (Lām al-ʿishq)......................... 189 The Lām of Gnosis (Lām al-maʿrifa)............................................. 192 The Cloud (al-ʿamāʾ)........................................................................... 196 The Alif of Tawḥīd................................................................................ 199 The Treasure-Dot (nuqṭat al-kanziyya)........................................ 201 5. Wandering (siyāḥa)...................................................................203 Wandering with the Body and with the Spirit............................. 206 The Junction of the Two Seas........................................................... 212 "The wandering of my community is jihad in God's cause".... 216 The Disciple's Provision..................................................................... 218 Regarding the Dry Ablution (tayammum)................................... 220 The Proper Courtesy of Siyāḥa........................................................ 222 6. The Spiritual Retreat (khalwa)................................................227 And We Appointed for Moses........................................................... 231 Separation (faṣl) and Union (waṣl)................................................. 235 Unification (al-jamʿ)............................................................................ 239 The Folding-Up (al-ṭayy)................................................................... 241 Beauty (al-jamāl)................................................................................. 245 And Moses Fell Down in a Swoon................................................... 249 7. The Innermost Secret (al-sirr)................................................255 As if you see Him (kaʾannaka tarāh).............................................. 258 The Vicegerency (al-khilāfa)............................................................ 268 Conclusion.....................................................................................275 Works Cited....................................................................................279 Index of Names..............................................................................285 
   
-  For chapter: v.object({ number: v.float64(), sectionTitle: v.string(), title: v.string(), }), I need you to infer what the chapter.number is and chapter.title is, based on the pageNumber you detect.  There are 7 chapters. Keep the isSectionStart to the exact page on the table of contents.
+  For chapter: v.object({ number: v.float64(), sectionTitle: v.string(), title: v.string(), }), I need you to infer what the chapter.number is and chapter.title is, based on the pageNumber you detect.  There are 7 chapters. Keep the isSectionStart to the exact page on the table of contents, for example if the page is 205, the isSectionStart is false but for page 203 or 206 isSectionStart is true. use this pattern to infer the rest of chapters and sections. Infer isChapterStart and isSectionStart against the exact page number on the table of content and the page themselves. Also infer the sectionTitle by seeing if it is either an exact page number or between two page numbers on the table of contents.
 
   For BookTitle use "${bookTitle}"
   
-  LAST BUT NOT LEAST, ONLY OUTPUT JSON DO NOT OUTPUT ANY EXPLANATIONS OR ANYTHING ELSE I JUST ONLY JSON OUTPUT PLEASE`;
+  
+  LAST BUT NOT LEAST, ONLY OUTPUT JSON DO NOT OUTPUT ANY EXPLANATIONS OR ANYTHING ELSE I JUST ONLY JSON OUTPUT PLEASE. DO NOT TALK TO ME JUST HAND OVER THE JSON. MAKE SURE CONVEX CAN PARSE THE JSON CORRECTLY AS YOUR ANSWER WILL BE DIRECTLY PUT INTO A CONVEX DATABASE!
+  
+  The JSON structure itself appears to be valid, but there are a few potential issues that could be causing problems:
+Special characters: The text contains several special characters, including Arabic names and terms (e.g., maʿiyya, Sayyidunā Abū Hurayra). These might be causing issues if the parser isn't properly configured to handle Unicode characters.
+Brackets: The text contains square brackets (e.g., [p], [Shaykh], [disciple]), which might be interpreted as array notation in JSON, potentially confusing the parser.
+Incomplete data: The 'pageContent' field seems to end mid-sentence ("The disciple needs a companion whose human substance has ceased to exist, and who only subsists by his Lord; a companion who will remind him of God when he looks at him."), which might indicate that the content was truncated.
+
+To resolve this issue, you might need to:
+
+Ensure that the JSON parser can handle complex Unicode characters.
+Consider pre-processing the text to escape or remove special characters that might be causing issues.
+Check if the parser is correctly handling the nested structure of the JSON, particularly the 'footnotes' array.
+Verify that the entire content is being captured and not truncated.
+If Markdown syntax is expected, ensure the parser is configured to handle it correctly.`;
 
   try {
     const response = await fetch(apiUrl, {
@@ -160,18 +181,41 @@ function processClaudeResponse(
     const parsedResponse = JSON.parse(response);
 
     return {
-      bookTitle,
+      bookTitle: bookTitle || "",
       bookTitleShort: "", // Not provided in the new prompt, keeping it for schema consistency
       chapter: {
-        number: parsedResponse.chapter.number,
-        sectionTitle: parsedResponse.chapter.sectionTitle,
-        title: parsedResponse.chapter.title,
+        number:
+          typeof parsedResponse.chapter?.number === "number"
+            ? parsedResponse.chapter.number
+            : 0,
+        sectionTitle:
+          typeof parsedResponse.chapter?.sectionTitle === "string"
+            ? parsedResponse.chapter.sectionTitle
+            : "",
+        title:
+          typeof parsedResponse.chapter?.title === "string"
+            ? parsedResponse.chapter.title
+            : "",
       },
-      footnotes: parsedResponse.footnotes || {},
-      isChapterStart: parsedResponse.isChapterStart,
-      isSectionStart: parsedResponse.isSectionStart,
-      pageContent: parsedResponse.pageContent,
-      pageNumber: parsedResponse.pageNumber,
+      footnotes: Array.isArray(parsedResponse.footnotes)
+        ? parsedResponse.footnotes
+        : [],
+      isChapterStart:
+        typeof parsedResponse.isChapterStart === "boolean"
+          ? parsedResponse.isChapterStart
+          : false,
+      isSectionStart:
+        typeof parsedResponse.isSectionStart === "boolean"
+          ? parsedResponse.isSectionStart
+          : false,
+      pageContent:
+        typeof parsedResponse.pageContent === "string"
+          ? parsedResponse.pageContent
+          : "",
+      pageNumber:
+        typeof parsedResponse.pageNumber === "number"
+          ? parsedResponse.pageNumber
+          : 0,
     };
   } catch (error) {
     console.error("Error parsing Claude response:", error);

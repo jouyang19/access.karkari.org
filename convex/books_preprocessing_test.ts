@@ -36,11 +36,31 @@ interface ProcessedBook {
     sectionTitle: string;
     title: string;
   };
-  footnotes?: object;
+  footnotes?: [
+    {
+      number: number;
+      content: string;
+    }
+  ];
   isChapterStart: boolean;
   isSectionStart: boolean;
   pageContent: string;
   pageNumber: number;
+  language: string;
+  publishing: {
+    author?: string;
+    ISBN?: string;
+    printedPageCount?: number;
+    publicationDate?: number;
+    publisher: string;
+    editors?: Array<{
+      name?: string;
+    }>;
+    translators?: Array<{
+      name?: string;
+    }>;
+    originalLanguage?: string;
+  };
 }
 
 interface ClaudeAPIResponse {
@@ -60,7 +80,9 @@ export const processBooks = action({
           doc.pageContent,
           doc.bookTitle
         );
+        console.log(response);
         const processedData = processClaudeResponse(response, doc.bookTitle);
+        console.log(processedData);
         await ctx.runMutation(api.books.create, processedData);
       } catch (error) {
         console.error(`Error processing document: ${doc.bookTitle}`, error);
@@ -89,11 +111,46 @@ async function callClaudeHaikuAPI(
   
   I need: pageContent: v.string(), pageNumber: v.float64(), remember to not include the pageNumber you extract in the pageContent string Each page will come with a title at the beginning, such as "The Foundations of the Karkariya Order", ignore it. 
   
-  A page may have footnotes, if it does then in the pageContent string demarcate the footnote with brackets like this: [[289]], and they will fit as an object into the Convex schema    field: footnotes: v.any() AND PLEASE DO NOT CHANGE THE LOCATION of the footnotes when inserting into pageContent, 
+  A page may have footnotes, if it does then in the pageContent string demarcate the footnote in line citations with brackets like this: [[289]], and they will fit as an object into the Convex schema    field: footnotes: [{number: number, content: string}] AND PLEASE DO NOT CHANGE THE LOCATION of the footnotes in-line citations when inserting into pageContent. Once extracted, do not keep the footnotes at the bottom of pageContent. The page number is at the heading. Infer new paragraphs and place [[p]] to indicate them please.
   
   Also from the pageContent I want you to remove un-necessary hyphens in words which the original content used for line breaks 
   
-  My Convex schema has a few other fields that you need to take care of: chapter: v.object({       number: v.float64(),  sectionTitle: v.string(),       title: v.string(),     }),     isChapterStart: v.boolean(),     isSectionStart: v.boolean(), The way you will figure these out, is from the table of contents and the associated page numbers, and note that each chapter start is also a section start
+  My Convex schema has a few other fields that you need to take care of: chapter: v.object({       number: v.float64(),  sectionTitle: v.string(),       title: v.string(),     }),     isChapterStart: v.boolean(),     isSectionStart: v.boolean(), The way you will figure these out, is from the table of contents and the associated page numbers, and note that each chapter start is also a section start. 
+
+  In addition my convex schema also has these fields that you need to take care of:     publishing: v.optional(
+        v.object({
+          author: v.optional(v.string()),
+          ISBN: v.optional(v.string()),
+          printedPageCount: v.optional(v.number()),
+          publicationDate: v.optional(v.number()),
+          publisher: v.optional(v.string()),
+          editors: v.optional(
+            v.array(
+              v.object({
+                name: v.optional(v.string()),
+              })
+            )
+          ),
+          translators: v.optional(
+            v.array(
+              v.object({
+                name: v.optional(v.string()),
+              })
+            )
+          ),
+          originalLanguage: v.optional(v.string()),
+        })
+    ),
+
+  For the publishing use the following information in brackets to help you: [By
+Shaykh Mohamed Faouzi Al-Karkari
+Translated by
+Yousef Casewit, Khalid Williams, Jamil Zaghdoudi
+ISBN: 978-2930978567
+printedPageCount: 292
+publicationDate: July 2, 2021
+publisher: Les 7 Lectures
+]
   
   Always keep pageContent within one string and if there are " " inside of the pageContent that will break the flow of the string, insert a \ before the quotes
   
@@ -103,9 +160,29 @@ async function callClaudeHaikuAPI(
   
   For chapter: v.object({ number: v.float64(), sectionTitle: v.string(), title: v.string(), }), I need you to infer what the chapter.number is and chapter.title is, based on the pageNumber you detect.  There are 7 chapters. Keep the isSectionStart to the exact page on the table of contents.
 
-  For BookTitle use "${bookTitle}"
+BookTitle field is the longer version of the book's title.
+
+  For BookTitleShort use "${bookTitle}"
+
+  For BookTitle use "The Foundations of the Karkariya Order". 
+
+  For language use "en"
   
-  LAST BUT NOT LEAST, ONLY OUTPUT JSON DO NOT OUTPUT ANY EXPLANATIONS OR ANYTHING ELSE I JUST ONLY JSON OUTPUT PLEASE`;
+  
+  LAST BUT NOT LEAST, ONLY OUTPUT JSON DO NOT OUTPUT ANY EXPLANATIONS OR ANYTHING ELSE I JUST ONLY JSON OUTPUT PLEASE. DO NOT TALK TO ME JUST HAND OVER THE JSON. MAKE SURE CONVEX CAN PARSE THE JSON CORRECTLY AS YOUR ANSWER WILL BE DIRECTLY PUT INTO A CONVEX DATABASE!
+  
+  The JSON structure itself appears to be valid, but there are a few potential issues that could be causing problems:
+Special characters: The text contains several special characters, including Arabic names and terms (e.g., maʿiyya, Sayyidunā Abū Hurayra). These might be causing issues if the parser isn't properly configured to handle Unicode characters.
+Brackets: The text contains square brackets (e.g., [p], [Shaykh], [disciple]), which might be interpreted as array notation in JSON, potentially confusing the parser.
+Incomplete data: The 'pageContent' field seems to end mid-sentence ("The disciple needs a companion whose human substance has ceased to exist, and who only subsists by his Lord; a companion who will remind him of God when he looks at him."), which might indicate that the content was truncated.
+
+To resolve this issue, you might need to:
+
+Ensure that the JSON parser can handle complex Unicode characters.
+Consider pre-processing the text to escape or remove special characters that might be causing issues.
+Check if the parser is correctly handling the nested structure of the JSON, particularly the 'footnotes' array.
+Verify that the entire content is being captured and not truncated.
+If Markdown syntax is expected, ensure the parser is configured to handle it correctly.`;
 
   try {
     const response = await fetch(apiUrl, {
@@ -160,18 +237,46 @@ function processClaudeResponse(
     const parsedResponse = JSON.parse(response);
 
     return {
-      bookTitle,
-      bookTitleShort: "", // Not provided in the new prompt, keeping it for schema consistency
+      bookTitle: "The Foundations of the Karkariya Order", // Example default value, replace with dynamic value as needed
+      bookTitleShort: "The Foundations", // Example default value, replace with dynamic value as needed
       chapter: {
-        number: parsedResponse.chapter.number,
-        sectionTitle: parsedResponse.chapter.sectionTitle,
-        title: parsedResponse.chapter.title,
+        number:
+          typeof parsedResponse.chapter?.number === "number"
+            ? parsedResponse.chapter.number
+            : 0,
+        sectionTitle:
+          typeof parsedResponse.chapter?.sectionTitle === "string"
+            ? parsedResponse.chapter.sectionTitle
+            : "",
+        title:
+          typeof parsedResponse.chapter?.title === "string"
+            ? parsedResponse.chapter.title
+            : "",
       },
-      footnotes: parsedResponse.footnotes || {},
-      isChapterStart: parsedResponse.isChapterStart,
-      isSectionStart: parsedResponse.isSectionStart,
-      pageContent: parsedResponse.pageContent,
-      pageNumber: parsedResponse.pageNumber,
+      footnotes: Array.isArray(parsedResponse.footnotes)
+        ? parsedResponse.footnotes.map((fn: any) => ({
+            number: typeof fn.number === "number" ? fn.number : 0,
+            content: typeof fn.content === "string" ? fn.content : "",
+          }))
+        : undefined,
+      isChapterStart:
+        typeof parsedResponse.isChapterStart === "boolean"
+          ? parsedResponse.isChapterStart
+          : false,
+      isSectionStart:
+        typeof parsedResponse.isSectionStart === "boolean"
+          ? parsedResponse.isSectionStart
+          : false,
+      pageContent:
+        typeof parsedResponse.pageContent === "string"
+          ? parsedResponse.pageContent
+          : "",
+      pageNumber:
+        typeof parsedResponse.pageNumber === "number"
+          ? parsedResponse.pageNumber
+          : 0,
+      language: "en", // Example default value, replace with dynamic value as needed
+      publishing: parsedResponse.publishing,
     };
   } catch (error) {
     console.error("Error parsing Claude response:", error);
