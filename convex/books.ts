@@ -12,7 +12,7 @@ export const create = mutation({
       sectionTitle: v.string(),
       title: v.string(),
     }),
-    footnotes: v.any(),
+    footnotes: v.optional(v.any()),
     isChapterStart: v.boolean(),
     isSectionStart: v.boolean(),
     pageContent: v.string(),
