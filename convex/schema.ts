@@ -42,8 +42,8 @@ export default defineSchema({
     ),
   }),
   books_preprocessing: defineTable({
-    pageContent: v.string(),
-    bookTitle: v.string(),
+    storageId: v.string(),
+    fileUrl: v.string(),
   }),
   books_preprocessing_test: defineTable({
     pageContent: v.string(),
