@@ -17,7 +17,7 @@ export default function FileUploadComponent() {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const uploadToConvex = useMutation(api.books_preprocessing.uploadBook);
+  const uploadToConvex = useMutation(api.books_preprocessing_test.uploadBook);
 
   const processBook = useAction(api.books_preprocessing_test.processBooks);
 

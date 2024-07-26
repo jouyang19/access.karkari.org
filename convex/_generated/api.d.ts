@@ -17,6 +17,7 @@ import type {
 import type * as books from "../books.js";
 import type * as books_preprocessing from "../books_preprocessing.js";
 import type * as books_preprocessing_test from "../books_preprocessing_test.js";
+import type * as books_test from "../books_test.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   books: typeof books;
   books_preprocessing: typeof books_preprocessing;
   books_preprocessing_test: typeof books_preprocessing_test;
+  books_test: typeof books_test;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
