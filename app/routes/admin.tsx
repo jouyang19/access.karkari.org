@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Layout from "~/components/Layout";
-import { generateFileUrls } from "convex/books_preprocessing";
+import { ProcessBooksButton } from "~/components/processBooksButton";
 
 interface UploadResult {
   success: boolean;
@@ -20,13 +20,7 @@ export default function FileUploadComponent() {
 
   const uploadToConvex = useMutation(api.books_preprocessing_test.uploadBook);
 
-  const processBook = useAction(api.books_preprocessing_test.processBooks);
-
   const processFileIds = useMutation(api.books_preprocessing.generateFileUrls);
-
-  const handleProcessBook = () => {
-    processBook();
-  };
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -116,9 +110,7 @@ export default function FileUploadComponent() {
           Select Files
         </Button>
         <br />
-        <Button className="" onClick={() => handleProcessBook()}>
-          Process Books
-        </Button>
+        <ProcessBooksButton />
         <br></br>
         <Button onClick={() => processFileIds()}>Generate File URLS</Button>
       </div>

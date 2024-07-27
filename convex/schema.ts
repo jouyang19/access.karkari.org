@@ -6,7 +6,7 @@ export default defineSchema({
     bookTitle: v.string(),
     bookTitleShort: v.string(),
     chapter: v.object({
-      number: v.float64(),
+      number: v.number(),
       sectionTitle: v.string(),
       title: v.string(),
     }),
@@ -14,7 +14,7 @@ export default defineSchema({
     isChapterStart: v.boolean(),
     isSectionStart: v.boolean(),
     pageContent: v.string(),
-    pageNumber: v.float64(),
+    pageNumber: v.number(),
     language: v.string(),
     publishing: v.optional(
       v.object({
@@ -48,44 +48,5 @@ export default defineSchema({
   books_preprocessing_test: defineTable({
     storageId: v.string(),
     fileUrl: v.string(),
-  }),
-  books_test: defineTable({
-    bookTitle: v.string(),
-    bookTitleShort: v.string(),
-    chapter: v.object({
-      number: v.float64(),
-      sectionTitle: v.string(),
-      title: v.string(),
-    }),
-    footnotes: v.optional(v.any()),
-    isChapterStart: v.boolean(),
-    isSectionStart: v.boolean(),
-    pageContent: v.string(),
-    pageNumber: v.float64(),
-    language: v.string(),
-    publishing: v.optional(
-      v.object({
-        author: v.optional(v.string()),
-        ISBN: v.optional(v.string()),
-        printedPageCount: v.optional(v.number()),
-        publicationDate: v.optional(v.number()),
-        publisher: v.optional(v.string()),
-        editors: v.optional(
-          v.array(
-            v.object({
-              name: v.optional(v.string()),
-            })
-          )
-        ),
-        translators: v.optional(
-          v.array(
-            v.object({
-              name: v.optional(v.string()),
-            })
-          )
-        ),
-        originalLanguage: v.optional(v.string()),
-      })
-    ),
   }),
 });

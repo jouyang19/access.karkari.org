@@ -1,311 +1,307 @@
-import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
-import { action } from "./_generated/server";
+import { mutation, query, action } from "./_generated/server";
 import { api } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
 import { ConvexError } from "convex/values";
+import fetch from "node-fetch";
 
-export const uploadBook = mutation(
-  async (
-    { db },
-    { pageContent, bookTitle }: { pageContent: string; bookTitle: string }
-  ) => {
-    await db.insert("books_preprocessing", { pageContent, bookTitle });
-  }
-);
+export const getAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("books_preprocessing").collect();
+  },
+});
 
 // List of storage IDs
 const storageIds = [
-  "kg2f8k5kmae7mq5t222nrz3dq16xm6nb",
-  "kg22abt06tatftzpe8zha9v46x6xmdnv",
-  "kg24nrv6ym0tnpbse3crfc64816xnm4g",
-  "kg245dzgg2trqk77bmg9ceaaj96xmjzw",
-  "kg2cmb7e6qxqmjzkj8w32ysdzd6xmcay",
-  "kg214gwee0gev1qw3r9spksk196xm0c4",
-  "kg2012ys13t45bt5st2ekzc0kh6xncfb",
-  "kg2fnhb0nsyjpqwd0gkazj3xw16xm9gh",
-  "kg29vz5g6dbvnt9k581j1nm0cn6xmy7m",
-  "kg2fkx0q9t9tdqqqxhtc0z097s6xm2kv",
-  "kg2a8syh5pe06pnq2a7aezc2gh6xmjkn",
-  "kg2eskynkqgcmzd3k4ek40x9s56xm6y8",
-  "kg22g3zb2eregprej2gjvtyng56xn749",
-  "kg24jxpze4t7j2jzcf6tnkntah6xn8gg",
-  "kg29yv2rj0c9xcx38cvywr1a7s6xnxh6",
-  "kg26rmd64k8cjnqaz1353eyxjd6xnrbm",
-  "kg23vncvve2r2nrp2k3y4jgg9s6xm9w0",
-  "kg26mngj209807gtvsc1f7pac16xn26m",
-  "kg29qwbyqycwz6p5t1sk31rw9h6xnept",
-  "kg22chr360xdyes72gwx7x7qg56xmvgh",
-  "kg25y2gq26p2ty4tnyv5x7thmx6xn7b8",
-  "kg2fafq91cjkxhm7zeehc3h8t56xmmyg",
-  "kg21zg1fe16gfkfp3szvfyhw1s6xnx32",
-  "kg2bt7ftka6d1srz1b38shfv3d6xnkk6",
-  "kg2307g44tnh9hp20dr40g4atx6xnpmv",
-  "kg225dv3sydbpxgbb780c2cmrn6xme8y",
-  "kg258b94mnxynh81gwaytkg9196xm9mt",
-  "kg2fe500rtkmwvbgxknmkb6n9h6xmnyh",
-  "kg236w7aby61n2tc6f69b91ak56xmas8",
-  "kg25nddqz96kxhqt0cj25stg916xn6q6",
-  "kg2451sqw1k4j06ytnvw9cb8cs6xngww",
-  "kg2dgwwvc60x76xkx8n9gem7zd6xm67z",
-  "kg20yh6csdcjch2txp08t3nvzh6xn38f",
-  "kg22r0bgx0gcs0tp2gcpjnv7v16xmfbb",
-  "kg2eb3ttnkhbbfvfve0ws6ckj96xnv7b",
-  "kg2595tzys2hw09nqd88p1rfjh6xnr2b",
-  "kg21vb3rc02kn4t9xwpg67qn6d6xnt6n",
-  "kg2a3j52rwdg9xst2hth0k3qj16xnnea",
-  "kg22c46szvwk9g1r2pb5rytjmh6xmwd9",
-  "kg2bsyyvr04h06e8217xkk659h6xma5g",
-  "kg2cpzcr49xw9gnwfjc4mf85ex6xn7cb",
-  "kg2f153z9v03p35amwjkmknmc16xmcac",
-  "kg20nbrrv8edw3vmqjv1yt5ya96xny01",
-  "kg2bhzqj24nxgfbvf3002vx3tn6xmpv8",
-  "kg2eq49r4xxpc3brbeqtxd5dyh6xm5ck",
-  "kg217jat198br4kaq7fg42631x6xm0x5",
-  "kg26k7ppg6kj58a7yvsnmvph996xn8mf",
-  "kg27wgda97dt1nbhzy38f5f1bn6xm68z",
-  "kg24e0qvw5xdkcdahsz228esd96xmat3",
-  "kg21d8xtwfc457pv8ssn2qjb4d6xn1pb",
-  "kg2ehdek7pks48gsrkrfhnr6k56xm2jk",
-  "kg22z446y95qsgd4prkwmc1a8d6xmvnj",
-  "kg2c3pf5rghnq7fmcd90r18rad6xmjj4",
-  "kg29xn21c1433fe5a9pyy7s0td6xn5fd",
-  "kg22h1pxtfwsweqjdhd12g1ean6xn0j6",
-  "kg2fnwmhfc29da2qxy40m7f9v96xne8v",
-  "kg2anx9q1q1grw6gw4j2zmd5x96xmk9k",
-  "kg2ahk3xmrrabj1crwag8mj92x6xne81",
-  "kg2c9n95n57gr9hnyndqh8njg56xn081",
-  "kg288hrj2e7cnebfjeqcfykf6d6xnpxy",
-  "kg2cz94g58zwb2tmvn2kma437h6xm6nt",
-  "kg27vsp87hkqdpgfb2tynch1956xm1zf",
-  "kg23xv34m5vrzfb4ze3acy9ceh6xmqbq",
-  "kg2earm1dh6qkyn1k3233vrdy16xnnbn",
-  "kg239942fkdsy0meneh9a1a5p96xn1d6",
-  "kg29khbgq6htf4ysk0wwqvfz3x6xnawb",
-  "kg2fdf0hrc7d2g32mqjrk5gdgx6xm2yp",
-  "kg25qbrhjstb6g1bazsnwhc9196xn2kx",
-  "kg29zpp3c9pfa8ge91cdkekmy96xn3vs",
-  "kg254nzwn9hj6v676881c7jfr56xmna8",
-  "kg26bg9btygxtfvp9hmqdv5xan6xmjyd",
-  "kg29g4d4dbkxnry8hb2bs2051h6xn3cn",
-  "kg2b3f10sby33vafh9rverd09h6xn1nm",
-  "kg2ay04dqt4xdnyxq9c4y6ktq56xn0kc",
-  "kg2ex8gy8dcasgxaa6ze15p5nd6xm7hj",
-  "kg2fje5evxwf6zvjqphq9ywqwh6xmavc",
-  "kg20bv1mgnj9hrwgbkgjekwf356xmewp",
-  "kg273t52124cjgzq1pp2q0yspx6xmk12",
-  "kg2abejtv600epdeyp047cpsc56xn2vq",
-  "kg25ry930hxpdbey3nba5cafbx6xn8sq",
-  "kg202tcc8fc2k8j4rp5cekqnrh6xm16f",
-  "kg20g5q5eqzz33cdbe68kwx7en6xnj2k",
-  "kg25qdmg89hqfeszkdagsm1emd6xm6xe",
-  "kg2csqf491z0sx3d0y8qws8m7x6xmnbn",
-  "kg25d613dw3d98rwsk50hr59ws6xnv8f",
-  "kg28z46n4xsygjq07z88gbm7bh6xm3xz",
-  "kg25hqtwmj7ckbdr1k0860seds6xna75",
-  "kg2dpq2tsndajer5t6fcmfk4556xmv76",
-  "kg2cq0anpry1yg4rz5exhrberx6xn5d5",
-  "kg2dvnp59d7qvm01j7606dnpp96xm985",
-  "kg22cd4hc9bk49a9p1v12bn8hh6xn94b",
-  "kg2cdg8kj179gt6j515xfsa1756xnept",
-  "kg2991bj4feyjswtzeyk87f1fn6xn8tm",
-  "kg283jhhtmms661zd5s149k78s6xntvq",
-  "kg26dmwn2zcsve7mkgf6970e696xnj2h",
-  "kg2dhh7xwvad8s32w6qe4f8dq16xm9ss",
-  "kg20t9tpe8adhrn42bc2z3kyqs6xm651",
-  "kg206jbwdnkrpetcadmd3e3ss96xnz3f",
-  "kg27g76bt9x380d1s7rqxcak416xn91k",
-  "kg2062mnhv9hdyjkxke5e61r3n6xnebm",
-  "kg23pf4yb28vz4qje1gb8h04dd6xmfsm",
-  "kg22hpvrdvmd7smf5sj84mdc856xmcjz",
-  "kg23zx3cgckccwfr7aqrtccck96xm2y1",
-  "kg289a00hscyr9s49357kd26qs6xmn4a",
-  "kg2a4tvd1762r7qex0gawj2p716xnpgt",
-  "kg2dgq9nqewhs13t5m733grph16xn309",
-  "kg25kn38mp6a0f74gga3qe69tn6xmxpj",
-  "kg24kn1f161pygyvmaq1gpfhmx6xn1e5",
-  "kg22addjz6486psnc7pf1n77616xn3tm",
-  "kg2eff06q0mxbhpwd3erg8ge9s6xm4x2",
-  "kg21smqt494pedpp728g0yzjsx6xn4qj",
-  "kg2az6s06x3adwzc5f69x5bw6h6xm3c9",
-  "kg2fnwxpa7c41qyfrb81x3ch2s6xms9p",
-  "kg203jws3d8715g98cs9e99ne56xmzfz",
-  "kg2ayw6xqtznpv02sa4zj7r26n6xnast",
-  "kg230265w46vr1zrt4k8q889c96xnytc",
-  "kg29gpqzc27vph8rmdfr8anh8n6xmsdx",
-  "kg2eqphbe54f1g1wy65j8jz4v56xm128",
-  "kg2b9grfn9a19s6gshc79ezjzs6xmnny",
-  "kg21c9e8dsnhk97w03jsz9zt9h6xnk98",
-  "kg220mkgj9jzwbmm2e9hpw61v96xmb5f",
-  "kg21aywfvbjdejy5nteshcfjg56xn4qc",
-  "kg293kvt4am9vqqx0tvq76k0ws6xnwwe",
-  "kg288dspxmk7hrh373609380nx6xn32z",
-  "kg2338vjpbm2pjkva283v9a6t16xmvs2",
-  "kg2c619cv8dectvq7qtsxfyft96xn9yr",
-  "kg2bwkqzfjfdw5p84a8b299d9h6xnadd",
-  "kg22sgh5zyqt8evvr40wvrhq1x6xn6fr",
-  "kg2cnm066s0x88znq814x5df0s6xm7gy",
-  "kg2a1xn8gf0cwf0h2h9jjkw6nx6xmxt7",
-  "kg2agnzkz7kwwz97sxsvskp08d6xnpqv",
-  "kg23hp89hxet06y6rgdby7x8fh6xmbq7",
-  "kg22bv25rhxws4z6s3wvdvja9s6xn7qn",
-  "kg218k1ayd5ccny2k2gkbe2smx6xn4wf",
-  "kg2643av7tr6b7d2v04e1xj23h6xmdw0",
-  "kg22qmzjzjyamvxkmx8n9wm68n6xmh4c",
-  "kg2cc6008pw4bt96qxcmpyy61d6xn9e9",
-  "kg296980k910m5319xkefym1zh6xnv8t",
-  "kg2fdxqk38wfhsckcbyz085vx56xmytx",
-  "kg299pm50709mmdv7n2ek1jt516xn4rw",
-  "kg2a0jeqva3e5878ygtjky6zhd6xm19f",
-  "kg24r3k63qjrzzvhg2ymbjbkps6xnz63",
-  "kg2bzg0cag49ykcahfqysx2dhh6xmnz2",
-  "kg28xex6xn0zp8wweh4jrre34n6xnm2r",
-  "kg24dmf6sw1v2qef5r6qmxn6r16xm16v",
-  "kg29w2wepz5a15mtst51bbb1k56xmrt6",
-  "kg244fcss32xbhzb711bxgsye56xn7bh",
-  "kg2dt7svaw2648z65jhpxbgbg16xmejb",
-  "kg2ett0n60m0j06zd32bzjvtch6xm1b9",
-  "kg27shvtbjj7q3s49yacqf7gtx6xnrvv",
-  "kg202ydgjqe7wy766t9dzd957h6xnyt1",
-  "kg2f0yaawv8kxkv9yqtam8prrd6xnxv1",
-  "kg28tg2ztj5hcrk9a18m99hz456xm7gx",
-  "kg28fr38ec5hr6y4qmf021qe1s6xnv9h",
-  "kg20pdp6fgvhn6t9s8wywjsz6h6xmbkx",
-  "kg23czwq5yqgr3vzjkpx62ymhh6xmjh3",
-  "kg2af9bx288p0kqrqdadhhf4g56xmtjv",
-  "kg2fcfghvxzrbprqaxj51f36bs6xmv5d",
-  "kg29xac330yecdnnb24tv8dbn16xme2t",
-  "kg28ajtxdm3vjdw8zhvm6q2xm96xnw8j",
-  "kg24g7v5hbjg7y4ktnkctccdvh6xmchy",
-  "kg260r178zj1yeyqsw499fqrsh6xnxrh",
-  "kg2cagxd8y0vpr09zq2gq9d03h6xn5ny",
-  "kg23fh99sg5e85zbjjkekn26vh6xng92",
-  "kg25rjv2b33p45snb2q9kh6qeh6xmjwt",
-  "kg214pgp0rg8cm3ks4s4snm3k16xnw3n",
-  "kg215vysyn0n80vn351cdk0zz56xna50",
-  "kg27x219kagk3379swy252gfsd6xmt0z",
-  "kg29q244zse496sbfz3cyvj1qh6xmmex",
-  "kg2e40dmxfhdccecxh5dzr4a516xn996",
-  "kg26zq92mvc8zn3jypt86mdczx6xnc2m",
-  "kg26e58w80yh1npqdxc9bkxnss6xmht1",
-  "kg28ta25yvqk684m70v23tesp96xn47w",
-  "kg253k63h8ptxsvvka0xbwn7k16xn3y2",
-  "kg24gdz8418cxjwvb1ya9c36k16xny40",
-  "kg2erp4d6xk9fffh11na3pgrs16xmhrz",
-  "kg2f63tyzq6xjcf1s9myxyej956xm4a3",
-  "kg25nnbdjs451k5xq7tkca7xzd6xm7hr",
-  "kg2c3139jeq8p1ja1d02jxfdpn6xm76j",
-  "kg2fgtrn4rw3kcsj1fa9ema19h6xm3w7",
-  "kg20fk3fw1189zq4ftzy4grjnh6xncaa",
-  "kg2bxdy2m5k3jbn2smy10nj1yx6xndee",
-  "kg2dwm26gq7s4tkezs1g48gqv56xmkhk",
-  "kg21mzqfj8xk04jr5rc1mneqrs6xm1ys",
-  "kg26httrnjdvzcy532bfk56n0x6xm1z2",
-  "kg2b0ww4af9k5wg04gzey6j4zn6xms2f",
-  "kg27nj8bg9zmeanp924bxjq9856xnfrv",
-  "kg2drkjvgsfw57bekk1gswcd316xnzt2",
-  "kg27v2t0bpw73ae3wx7fbv49gs6xm9hr",
-  "kg2f9dwttfaes61fg6f8gw1gax6xm17p",
-  "kg29h3xnambgw12yyhqa3gd4916xmbw1",
-  "kg2fhg1asw7ew85ddef2tgdy9d6xngac",
-  "kg2242vhmhv9afp9a12v1fp9ns6xn5ea",
-  "kg2737babyr62f3tdvrfbjby1d6xm2k3",
-  "kg2cj0q4p56tv1adpf4h2tnebh6xnx10",
-  "kg2861bkb68rwx3fx6336159f56xnscp",
-  "kg294t6mfz24vbk2vhwws0hern6xnjsr",
-  "kg2a5t31fazwn0epzedqq6kh696xmpkd",
-  "kg2677zwtvepw8v6qqsfm3zcw96xnxf4",
-  "kg2d3988w06c0bwh3ty9t6gg0s6xmp4g",
-  "kg216p9zw10gy42dbew7n050z16xn94k",
-  "kg2743b0vsh9cty2wv1aayxqm56xnjd5",
-  "kg264qqw9xy1reznyw99nzg4416xmqt4",
-  "kg24p8yf76maawm21yewky9rkx6xngxm",
-  "kg2b3x7fedeakzrs5dmpj61shh6xnh8c",
-  "kg21yq7ka50n9ttwz5mn0emvd96xmmyg",
-  "kg222d83n1eynnekj3hzcpxmnn6xnq6b",
-  "kg20mxfrfpj4qqafax644aje996xmzd6",
-  "kg2c5wfcd102aacphjxthj1m5s6xm2t5",
-  "kg27gvcyqrpenyssd2685a1r796xnrp0",
-  "kg2f7kgcten5xxad366dyv250n6xntxf",
-  "kg2fvtvn8etpeg062pe7bwrjv16xnk7a",
-  "kg255gf8x3j3a1tmqx3bsfg08n6xnrmq",
-  "kg27kbgjd5mfva0rhgfmxqngfx6xn54a",
-  "kg2bw7h679z2bekybpz1keghkn6xmyqp",
-  "kg23gjdfqspygwrhns4bd8s1216xm3k9",
-  "kg2ezwm7jfdzkkqxvdzrz3ae056xm9hp",
-  "kg2cdbvgzdfh6p0h7z58p06yb56xmke1",
-  "kg27ac4gcn7tdmwt1nhhgv9xv16xnkcs",
-  "kg2db4aaqtj78s6zrbsw0dndkx6xn1vg",
-  "kg2dh073415rg7f8kpqzykc91s6xmaet",
-  "kg28m4grwbbpy04pjdxn5k379h6xm654",
-  "kg2779vz062vbd02jh8s269q9x6xmsj8",
-  "kg2ewc8dafjfp3eakwxdvdmqzh6xnyrb",
-  "kg204r15qkfww20085jq24zr1x6xnw3x",
-  "kg22q7xxy5cgqjh7ey9twsybbs6xnq26",
-  "kg2929kkk2nzpyd7v61kfsknk96xnns9",
-  "kg26tbx9tz2h2x4a8dxg7bmgpd6xmt89",
-  "kg20mpy1e4hs0bsd0s6xm7gbn16xmttg",
-  "kg26g68v8y9qnmssa03h000t056xmhcs",
-  "kg26tqq7cg5zhxrq31p22gcpzx6xmtbd",
-  "kg23t7wxv1g8ynk9pbn5ktvwc96xm12a",
-  "kg29jhjmrpawb8v7d3m0xthqmd6xmhd6",
-  "kg2eq9py8x4ahzjzvgkyaqzjh16xn2sy",
-  "kg22jajs1tdchcq77gxjpge7mh6xnjqs",
-  "kg21z729xw3d1bdejz7khe7n4s6xmq4c",
-  "kg259q5qhk95y1b43jvr0nt0rd6xn0bj",
-  "kg20mv0w2234q6qvv6tf2dv2m56xn1sc",
-  "kg25s0gs750h382kwxfd8kwn7d6xmx4n",
-  "kg25mkd7bxskhyb6xxdcgaf7vx6xmzm8",
-  "kg26vfke6jtxxamv969h8bt1q16xn123",
-  "kg2ekd7jvpynz30xg8x3weabz16xmvqt",
-  "kg20vwe2yhp4cd0q6hc23ya4tx6xmee8",
-  "kg2fbv49rasvv2tkbt1x2s4z9h6xmgp7",
-  "kg2a01kp64tmmv8afjfvaj640x6xnva5",
-  "kg2019neyaqfphbdjra98n8vgs6xn70b",
-  "kg2d1s6rasqx2fsj29v2h9amzs6xm0ey",
-  "kg2eg3hrbdeqpzzy1wa5kmw0xs6xmrhx",
-  "kg2bkj83vx6c6vd47gzq65jann6xmhk3",
-  "kg287xwr8asgq32mtb3vw06kjs6xmyef",
-  "kg282dv5e7g35ft2dfw9xbfp616xmf27",
-  "kg23xnqbkdg6pjy2hmaqz9rcm56xnbqq",
-  "kg2fv6dgqscfmx6dpz5zfre3016xmyyr",
-  "kg28b9aq7xknhz41j5bryknx856xn1gx",
-  "kg2bvzv3jkwfrfbj266kj0bk5h6xn525",
-  "kg232jn7tm05bh5zk8xr9eh2s16xn4rp",
-  "kg2frb712zdymkwnt0t00ja8qs6xnryn",
-  "kg29m5ps0r9g0zpfnj62292vt16xmqk7",
-  "kg28gxc2dpbs570y2a4mj4srgh6xmj80",
-  "kg27hs3pztvn4tr13kqn30hak56xnbc3",
-  "kg2b0byaaqj7fay6nbfxzf4ga16xn5dy",
-  "kg24e3agfrj2zjwz7eb24bx2vh6xmhn8",
-  "kg24nvxmarmtw9wgef3583w0dd6xm7r9",
-  "kg24ppsabtj2mswerg2er5r2f96xnzzp",
-  "kg2fbkb15q68swm6qv2kc59t716xm9z8",
-  "kg2fk5dsvhbeef80vt591nt0cn6xnp0m",
-  "kg22tcbehztzsf3tm2ja5pzz7x6xmj70",
-  "kg2eeqh1bv9ejtje6jja5ppne96xn6e7",
-  "kg26dy5gt68ydpbe9y9qe37bs56xmzb5",
-  "kg25a5d93d7favrz4x17v4zzz56xmdse",
-  "kg20ve42hg66xx0scem2frrsv56xma1b",
-  "kg25byw26zf1y9x0y9wsgfzzq96xn3tk",
-  "kg24k01dzhcbbpw40kkyh2sgxs6xn89x",
-  "kg20242x0b0wg54jnkrvkspq9d6xnh3p",
-  "kg2d4w2mz89zc22c3txahpcyv56xn12j",
-  "kg2fdawnrk3g6nej17tbrxdyxn6xn2xw",
-  "kg26j9w21dyc263701tb323m6n6xnxj7",
-  "kg29sp64m07qwhryb3fgjhmzg16xmdjb",
-  "kg24nq0z2w46mypkxxpt22cxw16xmsd8",
-  "kg22cee548pdfpg9dksdjh97bs6xnx1c",
-  "kg26vaftshaafctyqbvyrdbvb16xmn7e",
-  "kg2e3prfd53mr1a961cwvvzcxd6xny7g",
-  "kg2c6embkqjx3k185d2ygxz4fh6xnhfj",
-  "kg2f7a9j2j1f35hg6x6kdxsf0s6xnj1y",
-  "kg2135gz6hqtgpaty3dfezr5xn6xnfc6",
-  "kg2apcgmj9abgn651ttg9xeja56xmkjw",
-  "kg2327rqc7kfvxt05s1e7kmp796xn6q9",
-  "kg2947xdc2424fxrw2h7xmjtv96xmb1d",
-  "kg220fx1eh5vn0xjwvn856n5q96xng2v",
-  "kg239zjtc5trg8jg7fmdbt0hyx6xm2r2",
+  "kg25qmftbbxagdg7b5ydz91psh6xq0fz",
+  "kg284qpnytkbhb888f8rqy7kcn6xpx8n",
+  "kg21c93zc73h81s19axshn8d9d6xqbz6",
+  "kg29exqngj9d856k8yta2yrs316xqrt9",
+  "kg2746jjf72w54m4v8cp0pd5qn6xqjh9",
+  "kg27h0grm9smqjh90rd8cfyw3h6xp2jm",
+  "kg242hk5a47sfejrnax7ycme9d6xqavy",
+  "kg23yfdx3g0ermt1x3t92ehjgh6xqyk9",
+  "kg2eaxtyqzm312bjnd5qn49xkn6xpbzy",
+  "kg288z4v2peqff77asnt4x01196xp4bz",
+  "kg254awy9qp2nwxstb6asxpg5n6xpbw1",
+  "kg22mrv96wtxd2v4pvthxxq3c56xqwpv",
+  "kg23dnsyw6hpx825wt4hq1rsmn6xqe8d",
+  "kg23908bnh3gh433e9p796abrn6xpwah",
+  "kg27kjpareqbr8ca814d0mqfyn6xpevq",
+  "kg27g219vgmherrpg5r7mxft296xqwqv",
+  "kg2b3xb6p9tf17bqzk149857d16xqbw5",
+  "kg27n54bqaf66bhde6yk77zb6n6xq5ty",
+  "kg2c89vsers2w3r2101jja2mg96xphds",
+  "kg2fb2wfdrcxpp02mj33mwkz1h6xqx15",
+  "kg25z5qy01snsrhkcc476efqzs6xqasv",
+  "kg271fqxfa6f11m50x6apa5b356xqqnh",
+  "kg288s6h7c5r0rntf8jjyx3vph6xqn6n",
+  "kg2c9t7hqg85qfsz88wb6pcmvd6xpzr1",
+  "kg229dbmevnxydfr0ct6knx4sd6xpt33",
+  "kg29s7kg9gnkdz9bjjg0120cm16xqbs2",
+  "kg2ab18ktbsm9v8xg785an1yvs6xpbg3",
+  "kg2dsadmtf35n1byh5d6vyg91h6xpnh3",
+  "kg21r8rv04ct28h25tr4xsv2w96xpy37",
+  "kg2dkzkeywkwpv8z9rps6g3bbh6xq5xn",
+  "kg250fen67spv4bgec4syrejw56xqtvn",
+  "kg251sfwpz8bk4sw76bbjvvdg96xqvjs",
+  "kg20a7xxhwnr4wgvmhcvpr1rhh6xpkp1",
+  "kg2edm7xm60960yjjmbttn24gn6xpynf",
+  "kg260q2dzncjgn44aftprj3v9h6xqtqz",
+  "kg2dkmebc12y52ey9g8hz68bb56xq92s",
+  "kg28x5dv0jyhy87jz2001y5cjx6xpjst",
+  "kg2cfqypbv6jrekme63p71fsbx6xq0d9",
+  "kg2601dvaym8xyq1zgxzaj6qmx6xpghw",
+  "kg2ac6y3h7dkywk3nhbzs1ha7h6xqbyg",
+  "kg21t0gprp9hserhe8h6qt5xhx6xpw7w",
+  "kg2bns0mxsbdb3hvrtv5z38kcx6xpfjf",
+  "kg214zb8ymg40hda4x16rhvj656xqgkx",
+  "kg2784ykzkch5jqg60emh0h3q96xqdz9",
+  "kg2dwjfhvve4hjxyx5jbq51sad6xq4vq",
+  "kg26myxkgsvcrx62bz1e9pptc96xpy9j",
+  "kg2epj4fpg6z4n4rax7txc7atx6xqvp3",
+  "kg2fs7fng20ts9qa76rnkc2cps6xq217",
+  "kg25d58zv2s1sy8326x17rzmxs6xp5zg",
+  "kg25ew71qv1xy0jz9dvah6fjed6xq639",
+  "kg21ay88pk54fy7f24r5kc42ns6xq15r",
+  "kg29ww4nwby8njmznwgj0bx0cd6xpqnd",
+  "kg287fjbs2eq77e6nsvtn5jc2h6xpn5h",
+  "kg2dmx1an709834nj0d2hnth756xp4aq",
+  "kg2c022hjr2bvgmxjzjtvrm9fn6xqa5b",
+  "kg23qb4wfdtg18qww932gq641n6xpnpn",
+  "kg22ebzn0ghqcftat4cefyqex96xqpsm",
+  "kg2e2cn6wqc5wpa4rm741cgrfs6xq56a",
+  "kg2e6pnssm9z3y961mjafbbnk96xpgje",
+  "kg258epe9ypy7arp9b07negkws6xqyzv",
+  "kg2fg20fmz536qp222qx3ykw3d6xqf3f",
+  "kg2d6mrq54gscgepr2mx6ahxgx6xp9gf",
+  "kg2d07b7spa1n42pvs9s7vm4wn6xq61f",
+  "kg2bgyxyg0x0f50tg9pakqh62x6xqphe",
+  "kg24atrnb8507bch5c9nnbywyh6xpj92",
+  "kg2fpd4k1bj39sb7mdx44k8fxd6xq7qe",
+  "kg2523x9knq8m76n0yrdv4xrq96xqw57",
+  "kg25hc13mtwv36nwj1ph13p7bh6xp5wh",
+  "kg23bcba2898b16prxr6jprfv96xqzx2",
+  "kg27caj86dyqxys8m6t53rvkb56xpnna",
+  "kg28tg67yf1e574m8zh471r8tx6xqxem",
+  "kg23pzsmv5h7fr3a2ekpv275wn6xpaw0",
+  "kg2e31wfcj3w1q90dfj0tk2n2x6xpyyx",
+  "kg2fdrmd3d9swaxsw0rt80smf16xq0dq",
+  "kg2b328y5akht7sgq1dhmvqmnx6xq6v3",
+  "kg270ek4gwte8wf4zst6b5xxbd6xpm46",
+  "kg2f6t58354bg52hax1zgb675h6xqyhg",
+  "kg2f2d7cv1fd92d5fja7zbe0bx6xpv5w",
+  "kg2agxz5vkpemm2e5vn69082q16xqmxv",
+  "kg273p5k1y992rkd3aexg1vf316xqrg4",
+  "kg29pydypcq0ar4gxb6554e6796xp2cd",
+  "kg25gqh2kmkw6hnyskpxxxqcp96xpnpa",
+  "kg2fvvgtf1dng1xb0shms2jc6n6xptkt",
+  "kg2chhswa7mvfyqsrt0kpvcdsn6xqg32",
+  "kg2cfvjfb2pq67m3r0teacgn5x6xpd2p",
+  "kg2e36z2902te8yrdh7tb5apz96xpppf",
+  "kg2fhhtta1s30zekntbhxbdjd56xpkhm",
+  "kg2a4yf26s0rp056vvws0y8p8x6xqam6",
+  "kg24728fn0rkz5118ztvhfs2bd6xq863",
+  "kg2eyw4nbghjsvpg68czbmc0k96xpm07",
+  "kg25n3theakarn4neshjw95bnn6xpckv",
+  "kg2afcjqqm84vtqyd61qczx7r96xqh09",
+  "kg28x7sfxn52k28pcv2hsh413d6xqjhw",
+  "kg24pe0wx9n3c97gy55x59rkqn6xq2kw",
+  "kg2f9tsbmrvxg3qdh4ttnbfk5d6xqdd0",
+  "kg229y3hkxc6xk5pgbmn11e2b56xq5zd",
+  "kg20sxvyf902pdxq3axp2gxkv56xp8a7",
+  "kg2fwvd99fpd9s1r0dfptznnnh6xqcct",
+  "kg285r2g7v8zvd22qy4csexyhh6xq51q",
+  "kg2cspknf97khhnyt9vjbgvn2x6xp9fc",
+  "kg2fh0mv87vgsqyv2afy87r1f56xp2b2",
+  "kg2ddjvng20prjpy1j3sv4qpx16xp4v7",
+  "kg29sdcvvvwv09qfmtbt9pg9n56xqfbn",
+  "kg23vs061g6g0492p1fqqqmyt16xp4by",
+  "kg2br6jws62sg5k8txmxtqxx4n6xqf3z",
+  "kg21ecy66q6sspad8f20jrqv616xpe9j",
+  "kg2ck5s4bgzqx6s8m70y00pbrh6xqyx3",
+  "kg270ew734c5hqyr3rv269xrzs6xq3pw",
+  "kg25s06rtthkqhjggez0jyqdt16xqhty",
+  "kg2bph02cvn4kzmw5d84zcs7wh6xq12k",
+  "kg220n3c4hg14j640t09yx20956xpv6w",
+  "kg21dntxn0d9tjjz2q53rd308h6xp3b0",
+  "kg23h6m9gamv1f5nphswrvgx1d6xqy68",
+  "kg27r43z13f1hwxw33xa5pabcs6xqfj2",
+  "kg2dbqhmsffatpgb669d4wkaw56xqf6z",
+  "kg218qnxzzkv8ygewr8erjkq016xqf04",
+  "kg29nw6dqjyd6dhxz8tdgvdfjh6xq4sa",
+  "kg2abaf9qw7g64r3253m6fsx256xp3km",
+  "kg2fx8tba4xa9twt64qsc2gtj56xp4tk",
+  "kg29k6k13g99j9s0d6yrtt4c6x6xpj5g",
+  "kg2ebe4sd8v2277vy4jdqx0f5d6xqx4e",
+  "kg2b3v2h256me6q7ems80s62x96xq4vc",
+  "kg2czctg419pgmr6mmrspera9n6xqma5",
+  "kg23c3554zgztkccydyn6bqfcx6xqn7b",
+  "kg2bmcphf6cb5zr0f1t74yzs7d6xpn12",
+  "kg20wnsvrpz12nh965nacbqexx6xqhrj",
+  "kg2a9fyz73r216nfk4rengtte16xqprj",
+  "kg2axy098n76gbyeg4m02wfjcd6xqqwr",
+  "kg24z7j04xsaktaksbcb1scwvd6xp8eg",
+  "kg2f3d5jn5ztd215dvkj8gm44n6xqznk",
+  "kg21z0kqfjk8rzxw087a9tj5xd6xq5rw",
+  "kg25agrbs8vmq3v8wp8gzswvmn6xpphc",
+  "kg2e89609jm4bdsrj515xaxtf96xqj4n",
+  "kg25x6wxhwj2dpq2bbd2badqyh6xq87g",
+  "kg291vkvs9esaf3hswca1vmj7d6xpv1j",
+  "kg23dk29bymd0qx0nc3nqe1k0d6xqs0m",
+  "kg22fq4sc45s8w3dfs4h7f9zws6xqz95",
+  "kg2fq1vn3jbcnwtba31nqnwvqx6xp666",
+  "kg271zp5btgsekpj3bp24hnn216xqs08",
+  "kg2d52w835y21vzrae5z4fmq4s6xp57y",
+  "kg2b8h7hr8n1gs9wx3mkqf308d6xqgfs",
+  "kg239hzgwz75a927ajcevjwqy96xpn9a",
+  "kg23gewxs0z1t7xx3b6sm4pma56xq3ra",
+  "kg28wzs7gj9wxfsyfv0e3nhxk16xqa4t",
+  "kg263m498081z0s3rvx0g3qeyh6xpksd",
+  "kg2cjbj4s98ab0mxw2y4g9scb96xpwnj",
+  "kg2c4k2t7kzjphg64dswqyh3ex6xqnye",
+  "kg2af7jw6evh144m1s6kg45ga16xpaqn",
+  "kg243gk4pf4sf9c0xx67mvh5z96xqacs",
+  "kg285wzgzdv8hkc0tf6ng989f56xp4jt",
+  "kg2d5y3r52k8017066rtg25nfd6xqzqx",
+  "kg24rez6yz94f26992grtg82qh6xp2y1",
+  "kg24zn79dmf8pf5w0bd869h9fh6xp34q",
+  "kg2fhptma42bg0hdckd3qp75ws6xphvj",
+  "kg26djb88e9mzz2sjdyx3swhnd6xqqf2",
+  "kg22v6xkg37qfhrfghpvg6xbjd6xqran",
+  "kg2d144kngecrkxeszdj7x8sf16xq7rb",
+  "kg2bcghdnrc2mp23tdt08afrqn6xq8dm",
+  "kg2dxeyrdc4bzxq5phn365yb1x6xq247",
+  "kg2857xgtccfkzeza7jxwk1gdh6xpnc4",
+  "kg2dvm0n9k9pzyejxe9j3v0zzh6xq2d7",
+  "kg20d65b3h6gx8397gw9ta2xr16xqsvr",
+  "kg22bt0kx0607yxxhre6z5rkd16xqgpm",
+  "kg2dshjt8emqwxbh3twxtswdrd6xpzzc",
+  "kg2bby6snppgxzbhn0g3jm15m56xpesy",
+  "kg2af3wngrydwxq2c73dpc351n6xpbwx",
+  "kg2b16vx88e2qgdb3kaksc3wz56xqnrj",
+  "kg24h9mt3h86ff4bkrvx3ykgbx6xqpa1",
+  "kg2evqcpmp93kxrf4nzkxvnq3n6xpgkf",
+  "kg2b245bzb0mdw7ft6yb00yap56xqkx8",
+  "kg205b0ace2xxw41f5fxqmqghx6xqesh",
+  "kg2fkzygs4v7qsqjhz6q0j5bc16xp0fx",
+  "kg2ar4d2nj53x9hsvfhy968zjx6xptta",
+  "kg25r44gv8bt5d0rym0646b8516xp8y6",
+  "kg21gkjx634n4h5zqs6weyf1zn6xp0h7",
+  "kg2a5bvzefv1w0w2a56e18aheh6xq1zy",
+  "kg230xjpft55n92xh0tgjdr7116xpcz8",
+  "kg2ahkwe976xs6djd2hghv1zc16xqa5m",
+  "kg2cvhqqbxxr2nz81923nsxe1h6xp59m",
+  "kg2amghk0ygtf8kbmsprbf0br16xprm5",
+  "kg21ba8te0k35nbn61k8gkbrrd6xpp45",
+  "kg2bdnhbhhr8g2sp83thqsn1ah6xpvyg",
+  "kg2ab3tss76qm7ebna8ryskzyd6xqvr8",
+  "kg2e798gb2y5c606fk5gwhhcdx6xp7n8",
+  "kg28p16s3febp7p8xp9ma0kej96xq3za",
+  "kg25zp9znbcwg1x4s3ta7sy46h6xpws7",
+  "kg2datw5f32cf17348wmahp6vh6xpzyb",
+  "kg2e4gvhn057qe8h8dwh17d4956xqatb",
+  "kg24vygcp1f7p01gxbczdshjxx6xq51p",
+  "kg2atq066bn7bgbgda8359hqc56xp0z5",
+  "kg27ppx32r3cpqsn6c1611f20x6xqfve",
+  "kg24eh16fqtn18t858fjawqcms6xq61z",
+  "kg282gjh1nsrxmnr88yxgk38a56xqm5t",
+  "kg23yb4kj1y58pyyr0s8g52w596xpwsq",
+  "kg28g3q4q00fk6k22xya4q1kms6xppbe",
+  "kg2b12aj75jhwh0xxhystdcv5n6xpwt1",
+  "kg2fhtme86yz5zksy5asxxa3vs6xq6b5",
+  "kg22phne3y2xpp2ncnap416rfs6xq2as",
+  "kg272d6nh0cg5hc4qgpkjgq0jx6xp2fk",
+  "kg26rpd5cgxps3j343cj9mqm2d6xp17v",
+  "kg23xm14gyd0rxd1cqdsb08dps6xpng9",
+  "kg2b7j3066hazg64y8tc94hf9x6xq8ze",
+  "kg24xqj37w2farvjfz1ybh8tr16xp2hk",
+  "kg25qng8h6kz2h0qbwp97f5n5n6xpecv",
+  "kg2az8sr5zdm35f8fezy8vh0ws6xqb3b",
+  "kg28y1enh29y1n7f50h76w02216xpbqn",
+  "kg22wjt0s4brzhqzf2ap6jmmps6xqed0",
+  "kg2bgq2b6x4dja93emarrkt4896xqdq6",
+  "kg28yn5t5n8mstr9vbjcevk1796xqccz",
+  "kg29mkv9v3gj5f6t9s92a831j96xprrj",
+  "kg2cxh5wgz0m76ga79mnbjk5m16xp34e",
+  "kg2e109bp2bbqbdjf7b2w4yrf56xq5bz",
+  "kg271618s52p3gef9sfeyw6g8h6xp5ge",
+  "kg27d3f6wk6yza7s33varkc6rn6xph0r",
+  "kg25gwb8aw7wr96zap4fpjncn16xq97y",
+  "kg2bnxt228w6rg3xnwkwfjg2p56xpj5s",
+  "kg28wt2b70bwcztb9gxz94yyfx6xpmtk",
+  "kg24evj31mazhykx00bchv5v616xp1gn",
+  "kg2dgcc0vzgz0g1hct7k842xbd6xprwy",
+  "kg2ahbav31fj28dvy56vy7bn3d6xq5gn",
+  "kg2dswsyvnpfpk388wdj2ewxp16xqp1a",
+  "kg20y45w4d7ykn8eqec88asmwx6xqzmv",
+  "kg2e7q6hb5f1spbs7zmazxswz16xpzh4",
+  "kg22aft2artcqabtqwsyc6m1996xq8yy",
+  "kg2cdrmsx8jsxmhzbdsd001sx16xq1fj",
+  "kg22n3baz63nwqs3vqfzd01ceh6xp6x5",
+  "kg26rb41ddxm5mqz0kn0r64k816xqfws",
+  "kg2aj3serjbwhdg2b1kgn1ywss6xq0xy",
+  "kg2exj0zj2r17fhrv0vpgkmpz56xpeht",
+  "kg24crb9cch0h505zsxy29rdxn6xpydv",
+  "kg24efgfm3th63nar8bq8y17b56xp0fg",
+  "kg2c415v8sev6jrn9hs134mscd6xpq6r",
+  "kg2fsxxvz5syd9bercj8k587996xpccc",
+  "kg297mnanbsjwf91gd3enakqq56xq3ex",
+  "kg2bra7ywrvq4p8xnkkegk6sgs6xqn70",
+  "kg2f1a5hyqnzz4qfhhrr7633016xqv69",
+  "kg28a34fzftmvdxn5wffp8df956xqwqw",
+  "kg2dtnmvqqk4c39ctv9cdh1zd16xq4cg",
+  "kg24eg1njvt5gj6d5rxr2j417h6xptpn",
+  "kg2aw5c3q64retfnecr0s1vd2n6xqv8h",
+  "kg2fam0brb07derj7bg50z9afx6xpvcd",
+  "kg2dqk459b2s4ajdrp4pv3gnjn6xqzw6",
+  "kg2940bk39kd8hztqndp0jpeax6xpjj4",
+  "kg2785b9xzk8j382x8bb2pr7qh6xqxkk",
+  "kg210h4qn0v5ar93km9k9qy1sh6xqegk",
+  "kg23k6ryppc3n7yzs4yz1hxn2x6xpj35",
+  "kg2b0nz1jt96c7aszhb9awj5v96xpb67",
+  "kg21mcdyw7xytnmdd8e6sa1yx96xpfyz",
+  "kg263f7g6h8sqb5dpz6xaenv1x6xqatq",
+  "kg209n2m4c8hm0b13cs9ekp6gh6xp803",
+  "kg2afyr9tr345j3266yg91ykeh6xpyx8",
+  "kg25h2be0g3zc7jvjznw2vkxc96xp8d0",
+  "kg24q2skg5qwncf62h6b2yw1ax6xq1g9",
+  "kg23sp3nts04c17xyhf5q2fq6x6xp4qe",
+  "kg2f2e00bmske1ydejk0bd1t696xqjt8",
+  "kg27bnf77gt632drtg5ycgay0x6xpxnt",
+  "kg25vstg976fe62g4j0m6bvj0d6xpq01",
+  "kg2efkdtqtdkrp6g5a84rz4tcx6xpxmz",
+  "kg2839cy73a0x1bdyrhk9a8bq56xpmqt",
+  "kg22thc1aje0w47qw61hymerd56xqncy",
+  "kg251qmfj10ap30cfjtvr1e89x6xp8bk",
+  "kg20rz5j73fgw1a3dga98swfc56xqpna",
+  "kg267z0jtx8fnh34t3bz6c8cpn6xp3md",
+  "kg244s04zhazf9x7q581v5032n6xqpm4",
+  "kg24p6xb1qjd3c2g29tn86gym96xpm7f",
+  "kg2ccrcw05xd5nqa1qa74rwejh6xpw3c",
+  "kg25gthcx36pgfdm98bkt125yn6xq867",
+  "kg217khgcyhrg9z9np0z9xdskx6xqthj",
+  "kg2601v68kqbxb213nqyjbaz616xq8y9",
+  "kg2fpehzztc0gkvrq5jgqspssh6xpnfr",
+  "kg253mjra8sfh15pa8fsv647516xpkht",
+  "kg2azx2na1r1gyp7s9jbch9j756xpvea",
+  "kg21r8bxrteahhgmc3x53j5fa96xqpmj",
+  "kg2afjcwek3zf6kjh1t4fx2rjn6xpdj4",
+  "kg2faaxt6hq9taxfx386s9sseh6xpcrd",
+  "kg2956jab7875nmbwy8x4h23p96xqfey",
+  "kg20nnh2kgfg5wqh9wc27nt02h6xp7vv",
+  "kg2fgs15hexfkecm2z0yr7ee7n6xqg02",
+  "kg2513cf67e1gn969wdsq0fhbd6xq9km",
+  "kg24deane99ss3shhgaet7wnrn6xpgzq",
+  "kg2c4bpa5rkgqmpq7b9w20s33h6xq6zz",
+  "kg21nrnhbekkzfmqqhvd57hcnh6xq1fg",
+  "kg26x2p7rjmm1k254hnfdsp8ds6xqsa0",
+  "kg266yf6brp7szh3vxbqf7qhzh6xqtee",
+  "kg2cc1wmvsxkawm2083v4yyh3x6xqmay",
+  "kg27yfg9eq5m55x8248j4j28s56xqv48",
+  "kg2ew76z9jqpnx298yq7hartq96xpfyn",
+  "kg20bcgbad02xee49487psppyx6xqksd",
+  "kg27mr9d4a6jbhk81m4zan2gs56xpjkb",
+  "kg2bp5kg9vx56xc1bvts0sr95s6xp6ys",
 ];
 
 export const generateFileUrls = mutation({
@@ -329,237 +325,3 @@ export const generateFileUrls = mutation({
     return results;
   },
 });
-
-export const getAll = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db.query("books_preprocessing").collect();
-  },
-});
-
-// Haiku Book Preprocessing
-
-interface ProcessedBook {
-  bookTitle: string;
-  bookTitleShort: string;
-  chapter: {
-    number: number;
-    sectionTitle: string;
-    title: string;
-  };
-  footnotes?: [
-    {
-      number: number;
-      content: string;
-    }
-  ];
-  isChapterStart: boolean;
-  isSectionStart: boolean;
-  pageContent: string;
-  pageNumber: number;
-  language: string;
-  publishing: {
-    author?: string;
-    ISBN?: string;
-    printedPageCount?: number;
-    publicationDate?: number;
-    publisher: string;
-    editors?: Array<{
-      name?: string;
-    }>;
-    translators?: Array<{
-      name?: string;
-    }>;
-    originalLanguage?: string;
-  };
-}
-
-interface ClaudeAPIResponse {
-  content: Array<{ text: string }>;
-}
-
-export const processBooks = action({
-  args: {},
-  handler: async (ctx): Promise<{ success: boolean; message: string }> => {
-    const documents = await ctx.runQuery(api.books_preprocessing.getAll);
-
-    for (const doc of documents) {
-      try {
-        const response = await callClaudeImageAPI(doc.fileUrl);
-        console.log(response);
-        const processedData = processClaudeResponse(response);
-        console.log(processedData);
-        await ctx.runMutation(api.books.create, processedData);
-      } catch (error) {
-        console.error(`Error processing document: ${doc.fileUrl}`, error);
-      }
-    }
-
-    return { success: true, message: "All books processed" };
-  },
-});
-
-async function callClaudeImageAPI(fileUrl: string): Promise<string> {
-  const apiKey = process.env.CLAUDE_API_KEY;
-  if (!apiKey) {
-    throw new ConvexError("Claude API key is not set");
-  }
-
-  const apiUrl = "https://api.anthropic.com/v1/messages";
-  const model = "claude-3-5-sonnet-20240620";
-
-  // Fetch the image data
-  const imageResponse = await fetch(fileUrl);
-  const imageBlob = await imageResponse.blob();
-  const base64Image = await blobToBase64(imageBlob);
-
-  const prompt = `Analyze the following image of a book page. Extract the following information:
-  
-  1. Page content: Extract all text visible on the page.
-  2. Page number: Identify the page number, if visible.
-  3. Chapter information: Determine if this is the start of a new chapter or section.
-  4. Footnotes: Identify any footnotes and their corresponding numbers.
-  5. Publishing details: Extract any visible publishing information such as author, ISBN, publication date, etc.
-  
-  Please format your response as a JSON object with the following structure:
-  
-  {
-    "pageContent": "string",
-    "pageNumber": number,
-    "chapter": {
-      "number": number,
-      "sectionTitle": "string",
-      "title": "string"
-    },
-    "isChapterStart": boolean,
-    "isSectionStart": boolean,
-    "footnotes": [
-      {
-        "number": number,
-        "content": "string"
-      }
-    ],
-    "publishing": {
-      "author": "string",
-      "ISBN": "string",
-      "printedPageCount": number,
-      "publicationDate": number,
-      "publisher": "string",
-      "editors": [
-        {
-          "name": "string"
-        }
-      ],
-      "translators": [
-        {
-          "name": "string"
-        }
-      ],
-      "originalLanguage": "string"
-    },
-    "language": "string",
-    "bookTitle": "The Foundations of the Karkariya Order",
-    "bookTitleShort": "The Foundations"
-  }
-  
-  Provide as much information as you can extract from the image. If certain fields are not visible or applicable, you may omit them from the JSON response.`;
-
-  try {
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: model,
-        max_tokens: 1000,
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: "image/jpeg",
-                  data: base64Image,
-                },
-              },
-              {
-                type: "text",
-                text: prompt,
-              },
-            ],
-          },
-        ],
-        temperature: 0.2,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new ConvexError(
-        `API call failed with status ${response.status}: ${errorBody}`
-      );
-    }
-
-    const data: ClaudeAPIResponse = await response.json();
-
-    if (!data.content || data.content.length === 0 || !data.content[0].text) {
-      throw new ConvexError("Unexpected API response format");
-    }
-
-    return data.content[0].text;
-  } catch (error) {
-    console.error("Error calling Claude Image API:", error);
-    throw new ConvexError(
-      "Failed to call Claude Image API: " +
-        (error instanceof Error ? error.message : String(error))
-    );
-  }
-}
-
-function processClaudeResponse(response: string): ProcessedBook {
-  try {
-    const parsedResponse = JSON.parse(response);
-
-    // Ensure all required fields are present, use default values if not
-    return {
-      bookTitle:
-        parsedResponse.bookTitle || "The Foundations of the Karkariya Order",
-      bookTitleShort: parsedResponse.bookTitleShort || "The Foundations",
-      chapter: {
-        number: parsedResponse.chapter?.number || 0,
-        sectionTitle: parsedResponse.chapter?.sectionTitle || "",
-        title: parsedResponse.chapter?.title || "",
-      },
-      footnotes: Array.isArray(parsedResponse.footnotes)
-        ? parsedResponse.footnotes.map((fn: any) => ({
-            number: typeof fn.number === "number" ? fn.number : 0,
-            content: typeof fn.content === "string" ? fn.content : "",
-          }))
-        : undefined,
-      isChapterStart: !!parsedResponse.isChapterStart,
-      isSectionStart: !!parsedResponse.isSectionStart,
-      pageContent: parsedResponse.pageContent || "",
-      pageNumber: parsedResponse.pageNumber || 0,
-      language: parsedResponse.language || "en",
-      publishing: parsedResponse.publishing || {},
-    };
-  } catch (error) {
-    console.error("Error parsing Claude response:", error);
-    throw new ConvexError("Failed to parse Claude response");
-  }
-}
-
-// Helper function to convert Blob to base64
-async function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
