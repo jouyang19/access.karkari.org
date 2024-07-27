@@ -20,8 +20,8 @@ const PLACEHOLDER_PUBLISHING = {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function useProcessBooks() {
-  const getAllPages = useQuery(api.books_preprocessing_test.getAll);
-  const createBook = useMutation(api.books_test.create);
+  const getAllPages = useQuery(api.books_preprocessing.getAll);
+  const createBook = useMutation(api.books.create);
   const processImageWithClaude = useAction(
     api.processImage.processImageWithClaude
   );
