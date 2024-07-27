@@ -27,7 +27,7 @@ export const processImageWithClaude = action({
       apiKey: CLAUDE_API_KEY,
     });
 
-    async function processImage(retryCount = 0, maxRetries = 7) {
+    async function processImage(retryCount = 0, maxRetries = 0) {
       try {
         // Fetch the image data
         const imageResponse = await fetch(imageUrl);

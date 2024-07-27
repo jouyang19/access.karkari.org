@@ -31,17 +31,31 @@ export function useProcessBooks() {
 
     for (const page of getAllPages) {
       try {
-        const pageContent = await processImageWithClaude({
+        const parsedResponse = await processImageWithClaude({
           imageUrl: page.fileUrl,
           prompt: `This is a page of a book.
 
-Extract the page content and the page number, output JSON given the Convex schema:
+Extract the page content and the page number and footnote number and content and chapter number and chapter title and section title, output JSON given the Convex schema:
 
-pageContent: v.string(), pageNumber: v.number(),
+pageContent: v.string(), 
+pageNumber: v.number(), 
+footnotes: [
+{
+number: v.number()
+content: v.string()
+}
+],
+chapter: {
+  number: v.number(),
+  sectionTitle: v.string(),
+  title: v.string(),
+  }
+isChapterStart: v.boolean(),
+isSectionStart: v.boolean(),
 
-Ignore the title at the top of the page, do not include it.
+Ignore the title at the very top of the page if there is one,  do not include it. 
 
-Keep the Arabic unicode characters.
+Keep the Arabic unicode characters, and do not translate anything to Arabic. 
 
 Remove the hypens from hyphenated words at line breaks.
 
@@ -59,54 +73,11 @@ Output JSON in your response, do not add any text outside of the JSON in your re
 
 Recognize if a page is a page from the index, to instead put all text inside pageContent, and the page number is always at the very bottom of the page. 
 
-very important: For null or undefined values, put an empty string or placeholder number instead.
-`,
-        });
+very important: For null or undefined values, put an empty string or placeholder number instead
 
-        const footnotes = await processImageWithClaude({
-          imageUrl: page.fileUrl,
-          prompt: `This is a page of a book.
+for footnotes, if there are no footnotes, put placeholder numbers and empty strings.
 
-Extract the footnote number and content, output JSON given the Convex schema: 
-
-footnotes: [
-{
-number: v.number()
-content: v.string()
-}
-]
-
-
-
-Keep the Arabic unicode characters.
-
-Remove the hypens from hyphenated words at line breaks, if any.
-
-To prevent syntax issues, before every " quotation mark and ' quotes within pageContent, add a \ triple backslash right before them. Double make sure to add \\ double backslash before quotation marks.
-
- Do not have \'\'\'json in the beginning of the output please, or this will fail. The highest priority instruction I have for you is to include \\ double backslash right before " quotation marks within the pageContent string.
-
-Output JSON in your response, do not add any text outside of the JSON in your response. Do everything I said, ALWAYS
-
-if there are no footnotes, put placeholder numbers and empty strings.
-`,
-        });
-
-        const chapterDetails = await processImageWithClaude({
-          imageUrl: page.fileUrl,
-          prompt: `
-This is a page of a book.
-
-Extract the footnote number and content, output JSON given the Convex schema: 
-{
-  chapter: {
-      number: v.number(),
-      sectionTitle: v.string(),
-      title: v.string(),
-  }
-  isChapterStart: v.boolean(),
-  isSectionStart: v.boolean(),
-}
+for chapter details:
 
 The title of the book is The Foundations of the Karkariya Order, so do not use that for title of chapter.
 
@@ -172,12 +143,12 @@ Infer sectionTitle, title and number from the following table of contents:
 
 ==== END OF TABLE OF CONTENTS ====
 
-Infer section number by the chapter float numbers, so for 7.2 it will be chapter 7 and section 2.
+Infer section name by the page number and the table of contents.
 
 No null or undefined values, use empty string or placeholder number instead. 
 
-Output JSON in your response, do not add any text outside of the JSON in your response..
-          `,
+.
+`,
         });
 
         // Prepare data for insertion
@@ -185,19 +156,19 @@ Output JSON in your response, do not add any text outside of the JSON in your re
           bookTitle: "The Foundations of the Karkariya Order" || "",
           bookTitleShort: "The Foundations" || "",
           chapter: {
-            number: chapterDetails.chapter?.number ?? 0,
-            sectionTitle: chapterDetails.chapter?.sectionTitle || "",
-            title: chapterDetails.chapter?.title || "",
+            number: parsedResponse.chapter?.number ?? 0,
+            sectionTitle: parsedResponse.chapter?.sectionTitle || "",
+            title: parsedResponse.chapter?.title || "",
           },
           footnotes:
-            footnotes.footnotes?.map((footnote) => ({
+            parsedResponse.footnotes?.map((footnote) => ({
               number: footnote.number ?? 0,
               content: footnote.content || "",
             })) || [],
-          isChapterStart: chapterDetails.isChapterStart ?? false,
-          isSectionStart: chapterDetails.isSectionStart ?? false,
-          pageContent: pageContent.pageContent || "",
-          pageNumber: pageContent.pageNumber ?? 0,
+          isChapterStart: parsedResponse.isChapterStart ?? false,
+          isSectionStart: parsedResponse.isSectionStart ?? false,
+          pageContent: parsedResponse.pageContent || "",
+          pageNumber: parsedResponse.pageNumber ?? 0,
           language: "English" || "",
           publishing: {
             author: PLACEHOLDER_PUBLISHING.author || "",
