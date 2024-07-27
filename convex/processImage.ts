@@ -1,7 +1,6 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { api } from "./_generated/api";
 
 export const processImageWithClaude = action({
   args: { imageUrl: v.string(), prompt: v.string() },
@@ -14,6 +13,10 @@ export const processImageWithClaude = action({
       throw new Error("Claude API key not configured");
     }
 
+    const anthropic = new Anthropic({
+      apiKey: CLAUDE_API_KEY,
+    });
+
     function isValidJson(jsonString) {
       try {
         JSON.parse(jsonString);
@@ -23,9 +26,9 @@ export const processImageWithClaude = action({
       }
     }
 
-    const anthropic = new Anthropic({
-      apiKey: CLAUDE_API_KEY,
-    });
+    async function delay(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
 
     async function processImage(retryCount = 0, maxRetries = 5) {
       try {
@@ -59,13 +62,12 @@ export const processImageWithClaude = action({
           ],
         });
 
-        console.log("before JSON parser", response);
-        console.log("before JSON parser", response.content[0].text);
+        console.log("Claude response:", response.content[0].text);
         let string = response.content[0].text;
 
         if (isValidJson(string)) {
           let parsedResponse = JSON.parse(string);
-          console.log(parsedResponse);
+          console.log("Parsed JSON response:", parsedResponse);
           return parsedResponse;
         } else {
           console.error("Invalid JSON format");
@@ -73,18 +75,22 @@ export const processImageWithClaude = action({
             console.log(
               `Retrying... Attempt ${retryCount + 1} of ${maxRetries}`
             );
+            await delay(1000); // Exponential backoff
             return await processImage(retryCount + 1, maxRetries);
           } else {
-            throw new Error("Max retries reached. Unable to process image.");
+            console.error("Max retries reached. Unable to get valid JSON.");
           }
         }
       } catch (error) {
         console.error("Error processing image with Claude:", error);
         if (retryCount < maxRetries) {
           console.log(`Retrying... Attempt ${retryCount + 1} of ${maxRetries}`);
+          await delay(1000); // Exponential backoff
           return await processImage(retryCount + 1, maxRetries);
         } else {
-          throw new Error("Max retries reached. Unable to process image.");
+          throw new Error(
+            `Max retries reached. Unable to process image: ${error.message}`
+          );
         }
       }
     }

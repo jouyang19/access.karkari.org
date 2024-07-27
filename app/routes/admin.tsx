@@ -1,11 +1,12 @@
 import { api } from "convex/_generated/api";
 import React, { useState, useRef } from "react";
-import { useMutation, useAction } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Layout from "~/components/Layout";
-import { ProcessBooksButton } from "~/components/processBooksButton";
+import { ProcessBooksButton } from "~/components/utils/processBooksButton";
+import { BooksPageNumberLogger } from "~/components/utils/analyzePagesButton";
 
 interface UploadResult {
   success: boolean;
@@ -18,7 +19,7 @@ export default function FileUploadComponent() {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const uploadToConvex = useMutation(api.books_preprocessing_test.uploadBook);
+  const uploadToConvex = useMutation(api.books_preprocessing.uploadBook);
 
   const processFileIds = useMutation(api.books_preprocessing.generateFileUrls);
 
@@ -104,6 +105,7 @@ export default function FileUploadComponent() {
           </Alert>
         )}
         <Button
+          className="mt-2"
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
         >
@@ -112,7 +114,11 @@ export default function FileUploadComponent() {
         <br />
         <ProcessBooksButton />
         <br></br>
-        <Button onClick={() => processFileIds()}>Generate File URLS</Button>
+        <Button className="mt-2" onClick={() => processFileIds()}>
+          Generate File URLS
+        </Button>
+        <BooksPageNumberLogger />
+        <br />
       </div>
     </Layout>
   );

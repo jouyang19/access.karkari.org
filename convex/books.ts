@@ -71,3 +71,52 @@ export const getAllPageNumbers = query(async ({ db }) => {
   console.log(pageNumbers);
   return pageNumbers;
 });
+
+import { query } from "./_generated/server";
+
+export const pagesAnalysis = mutation(async ({ db }) => {
+  // Retrieve all pageNumber values
+  const books = await db.query("books").collect();
+  const pageNumbers = books.map((book) => book.pageNumber);
+
+  console.log("All page numbers:", pageNumbers);
+
+  // Check for duplicates
+  const duplicates = pageNumbers.filter(
+    (num, index, array) => array.indexOf(num) !== index
+  );
+  console.log("Duplicate page numbers:", duplicates);
+
+  // Find page numbers outside the range 0-290
+  const outOfRange = pageNumbers.filter((num) => num < 0 || num > 290);
+  console.log("Page numbers out of range (0-290):", outOfRange);
+
+  // Find missing page numbers in the range 0-290
+  const allPossiblePages = Array.from({ length: 291 }, (_, i) => i);
+  const missingPages = allPossiblePages.filter(
+    (num) => !pageNumbers.includes(num)
+  );
+  console.log("Missing page numbers in range 0-290:", missingPages);
+
+  return {
+    allPageNumbers: pageNumbers,
+    duplicates,
+    outOfRange,
+    missingPages,
+  };
+});
+
+export const resetChapterAndSectionStarts = mutation(async ({ db }) => {
+  // Query all book documents
+  const books = await db.query("books").collect();
+
+  // Update each book
+  for (const book of books) {
+    await db.patch(book._id, {
+      isChapterStart: false,
+      isSectionStart: false,
+    });
+  }
+
+  return { success: true, message: "All books updated successfully" };
+});

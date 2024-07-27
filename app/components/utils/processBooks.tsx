@@ -17,8 +17,6 @@ const PLACEHOLDER_PUBLISHING = {
   originalLanguage: "Arabic",
 };
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export function useProcessBooks() {
   const getAllPages = useQuery(api.books_preprocessing.getAll);
   const createBook = useMutation(api.books.create);
@@ -61,9 +59,9 @@ Keep the Arabic unicode characters, and do not translate anything to Arabic.
 
 Remove the hypens from hyphenated words at line breaks.
 
-To prevent syntax issues, for every " quotation mark and ' quotes within pageContent, ALWAYS add a \\ double backslash right before them. ALWAYS make sure and carefully diligently check to add \\  double backslash before quotation marks.
+To prevent syntax issues, for every " quotation mark and ' quotes within pageContent, ALWAYS add a \ backslash right before them. ALWAYS make sure and carefully diligently check to add \  backslash before quotation marks.
 
- Do not have \'\'\'json in the beginning of the output please, or this will fail. The highest priority instruction I have for you is to include \\ double backslash right before " quotation marks and single quotes ' within the pageContent string.
+ Do not have \'\'\'json in the beginning of the output please, or this will fail. The highest priority instruction I have for you is to include \ backslash right before " quotation marks and single quotes ' within the pageContent string.
 
 For the footnotes included within the page body text, keep them in the place that they occur, but render them in brackets like this: [[286]]
 
@@ -206,5 +204,3 @@ If you are not certain of the veracity of your response, please leave it as an e
 
   return processBooks;
 }
-
-function hello() {}
