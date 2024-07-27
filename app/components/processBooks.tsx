@@ -20,8 +20,8 @@ const PLACEHOLDER_PUBLISHING = {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function useProcessBooks() {
-  const getAllPages = useQuery(api.books_preprocessing.getAll);
-  const createBook = useMutation(api.books.create);
+  const getAllPages = useQuery(api.books_preprocessing_test.getAll);
+  const createBook = useMutation(api.books_test.create);
   const processImageWithClaude = useAction(
     api.processImage.processImageWithClaude
   );
@@ -33,7 +33,7 @@ export function useProcessBooks() {
       try {
         const parsedResponse = await processImageWithClaude({
           imageUrl: page.fileUrl,
-          prompt: `This is a page of a book.
+          prompt: `This is a page of a book:
 
 Extract the page content and the page number and footnote number and content and chapter number and chapter title and section title, output JSON given the Convex schema:
 
@@ -55,6 +55,8 @@ isSectionStart: v.boolean(),
 
 Ignore the title at the very top of the page if there is one,  do not include it. 
 
+pageNumber is always at the very bottom of the page. If there is no pageNumber on the very bottom of the page, put 0 as the pageNumber, not null or undefined.
+
 Keep the Arabic unicode characters, and do not translate anything to Arabic. 
 
 Remove the hypens from hyphenated words at line breaks.
@@ -73,9 +75,9 @@ Output JSON in your response, do not add any text outside of the JSON in your re
 
 Recognize if a page is a page from the index, to instead put all text inside pageContent, and the page number is always at the very bottom of the page. 
 
-very important: For null or undefined values, put an empty string or placeholder number instead
+very important: For null or undefined values, put an empty string or the number 0 instead.
 
-for footnotes, if there are no footnotes, put placeholder numbers and empty strings.
+for footnotes, if there are no footnotes, put the number 0 or an empty string "" instead..
 
 for chapter details:
 
@@ -143,10 +145,16 @@ Infer sectionTitle, title and number from the following table of contents:
 
 ==== END OF TABLE OF CONTENTS ====
 
+The format of the table of contents goes like this: <Chapter number> <Chapter Name>.............. <Page Number> 
+
 Infer section name by the page number and the table of contents.
 
-No null or undefined values, use empty string or placeholder number instead. 
+No null or undefined values, use an empty string "" or the number 0 instead.
 
+Lastly, most importantly, if the page I send you looks like an Index page or a Reference page, please do not get confused by the different numbers in it and remember that the pageNumber will always be the last number on the very bottom of the page and use that number to know if you are in the Index of Names or Works Cited using the table of contents.
+And if the page is an Index of Names page, know that the page is in three columns so be sure to capture the names and their corresponding numbers correctly.
+If the page has no page Number on the very bottom of the page but has text, it is most likely a page either in the front or back of the book. For these pages, analyze to see if they should be in the front of back of the book, and if it is the front, use 1 as the pageNumber, and if it is the back, use 288 as the pageNumber. 
+If you are not certain of the veracity of your response, please leave it as an empty string or the 0 number. 
 .
 `,
         });

@@ -1,6 +1,4 @@
-// File: convex/books_test.ts
-
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 export const create = mutation({
@@ -63,4 +61,11 @@ export const create = mutation({
 
     return bookId;
   },
+});
+
+export const getAllPageNumbers = query(async ({ db }) => {
+  const books = await db.query("books_test").collect();
+  const pageNumbers = books.map((book) => book.pageNumber);
+  console.log(pageNumbers);
+  return pageNumbers;
 });
