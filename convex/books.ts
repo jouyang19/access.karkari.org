@@ -3,6 +3,18 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+// export const getAllPageNumbers = query(async ({ db }) => {
+//   const books = await db.query("books").collect();
+//   const pageNumbers = books.map((book) => book.pageNumber);
+//   console.log(pageNumbers);
+//   return pageNumbers;
+// });
+
+export const getAll = query(async ({ db }) => {
+  const books = await db.query("books").collect();
+  return books;
+});
+
 export const create = mutation({
   args: {
     bookTitle: v.string(),
@@ -119,4 +131,146 @@ export const resetChapterAndSectionStarts = mutation(async ({ db }) => {
   }
 
   return { success: true, message: "All books updated successfully" };
+});
+
+export const moveTextToPreviousPage = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Query all books, sorted by pageNumber
+    const books = await ctx.db
+      .query("books")
+      .order("asc", "pageNumber")
+      .collect();
+
+    for (let i = 0; i < books.length; i++) {
+      const currentDoc = books[i];
+
+      if (currentDoc.chapter && currentDoc.chapter.sectionTitle) {
+        const sectionTitleIndex = currentDoc.pageContent.indexOf(
+          currentDoc.chapter.sectionTitle
+        );
+
+        if (sectionTitleIndex !== -1) {
+          const textToMove = currentDoc.pageContent.substring(
+            0,
+            sectionTitleIndex
+          );
+          const newCurrentPageContent =
+            currentDoc.pageContent.substring(sectionTitleIndex);
+
+          // Find the previous page
+          const previousDoc = books.find(
+            (book) => book.pageNumber === currentDoc.pageNumber - 1
+          );
+
+          if (previousDoc) {
+            // Update the previous document
+            await ctx.db.patch(previousDoc._id, {
+              pageContent: previousDoc.pageContent + textToMove,
+            });
+
+            // Update the current document
+            await ctx.db.patch(currentDoc._id, {
+              pageContent: newCurrentPageContent,
+            });
+          } else {
+            console.warn(
+              `No previous page found for page number ${currentDoc.pageNumber}`
+            );
+          }
+        }
+      }
+    }
+  },
+});
+
+export const updateChapterSectionFlags = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const books = await ctx.db
+      .query("books")
+      .order("asc", "pageNumber")
+      .collect();
+
+    for (const book of books) {
+      let isChapterStart = false;
+      let isSectionStart = false;
+
+      const chapterTitle = book.chapter.title.trim();
+      const sectionTitle = book.chapter.sectionTitle.trim();
+
+      // Split the page content into lines
+      const contentLines = book.pageContent
+        .replace(/\[p\]/g, "")
+        .split("\n")
+        .map((line) => line.trim());
+
+      // Check for chapter start
+      isChapterStart = contentLines.some((line) => line === chapterTitle);
+
+      // Check for section start
+      isSectionStart = contentLines.some((line) => line === sectionTitle);
+
+      console.log(
+        "contentLines: ",
+        contentLines,
+        "isChapterStart: ",
+        isChapterStart,
+        " | ",
+        "isSectionStart: ",
+        isSectionStart
+      );
+
+      if (isChapterStart || isSectionStart) {
+        await ctx.db.patch(book._id, {
+          isChapterStart,
+          isSectionStart,
+        });
+      }
+    }
+  },
+});
+
+export const updateChapterSectionFlagsUsingEvery = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const books = await ctx.db
+      .query("books")
+      .order("asc", "pageNumber")
+      .collect();
+
+    for (const book of books) {
+      let isChapterStart = false;
+      let isSectionStart = false;
+      const chapterTitle = book.chapter.title.toLowerCase();
+      const sectionTitle = book.chapter.sectionTitle.toLowerCase();
+
+      // Remove [p] tags and convert to lowercase
+      const pageContent = book.pageContent.replace(/\[p\]/g, "").toLowerCase();
+
+      // Check for chapter start
+      const chapterWords = chapterTitle.split(/\s+/);
+      isChapterStart = chapterWords.every((word) =>
+        pageContent.includes(word.replace(/[()]/g, ""))
+      );
+
+      // If it's a chapter start, it's also a section start
+      if (isChapterStart) {
+        isSectionStart = true;
+      } else {
+        // Check for section start
+        const sectionWords = sectionTitle.split(/\s+/);
+        isSectionStart = sectionWords.every((word) =>
+          pageContent.includes(word.replace(/[()]/g, ""))
+        );
+      }
+
+      if (isChapterStart || isSectionStart) {
+        await ctx.db.patch(book._id, {
+          isChapterStart,
+          isSectionStart,
+        });
+      }
+    }
+  },
 });

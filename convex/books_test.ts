@@ -1,6 +1,11 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+export const getAll = query(async ({ db }) => {
+  const books = await db.query("books_test").collect();
+  return books;
+});
+
 export const create = mutation({
   args: {
     bookTitle: v.string(),
