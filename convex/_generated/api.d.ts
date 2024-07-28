@@ -14,10 +14,12 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as auth from "../auth.js";
 import type * as books from "../books.js";
 import type * as books_preprocessing from "../books_preprocessing.js";
 import type * as books_preprocessing_test from "../books_preprocessing_test.js";
 import type * as books_test from "../books_test.js";
+import type * as http from "../http.js";
 import type * as processImage from "../processImage.js";
 
 /**
@@ -29,10 +31,12 @@ import type * as processImage from "../processImage.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   books: typeof books;
   books_preprocessing: typeof books_preprocessing;
   books_preprocessing_test: typeof books_preprocessing_test;
   books_test: typeof books_test;
+  http: typeof http;
   processImage: typeof processImage;
 }>;
 export declare const api: FilterApi<

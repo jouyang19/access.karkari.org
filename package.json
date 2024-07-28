@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",
+    "@auth/core": "^0.34.2",
+    "@convex-dev/auth": "^0.0.43",
     "@radix-ui/react-slot": "^1.1.0",
     "@remix-run/node": "^2.10.3",
     "@remix-run/react": "^2.10.3",

@@ -1,5 +1,7 @@
 import { ReactNode } from "react";
 import Navbar from "./NavBar";
+import { Login } from "./LoginPage";
+import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 
 interface LayoutProps {
   children: ReactNode;
@@ -8,8 +10,14 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   return (
     <div>
-      <Navbar />
-      <main>{children}</main>
+      <AuthLoading>Loading</AuthLoading>
+      <Unauthenticated>
+        <Login />
+      </Unauthenticated>
+      <Authenticated>
+        <Navbar />
+        <main>{children}</main>
+      </Authenticated>
     </div>
   );
 }

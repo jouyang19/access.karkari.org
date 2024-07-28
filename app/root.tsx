@@ -8,7 +8,8 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import "./tailwind.css";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexReactClient } from "convex/react";
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { useState } from "react";
 
 export async function loader() {
@@ -28,7 +29,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <ConvexProvider client={convex}>{children}</ConvexProvider>
+        <ConvexAuthProvider client={convex}>{children}</ConvexAuthProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
