@@ -9,7 +9,10 @@ export function SignInWithGoogle() {
       className=""
       variant="outline"
       type="button"
-      onClick={() => void signIn("google")}
+      onClick={() => {
+        void signIn("google");
+        console.log("Logging in successfull");
+      }}
     >
       <GoogleLogo className="mr-2 h-4 w-4" /> Google
     </Button>

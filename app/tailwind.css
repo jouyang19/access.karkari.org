@@ -1,6 +1,35 @@
+@import url("https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: "ITC Franklin Gothic Std";
+  src: url("/public/ITCFranklinGothicStd-Med.otf");
+  font-weight: 500;
+}
+@font-face {
+  font-family: "DINPro";
+  src: url("/public/DINPro Bold.otf");
+  font-weight: 700;
+}
+@font-face {
+  font-family: "DIN";
+  src: url("/public/DINPro Bold.otf");
+  font-weight: 700;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body {
+  @apply leading-[normal] m-0;
+}
+*,
+::before,
+::after {
+  border-width: 0;
+}
 
 @layer base {
   :root {

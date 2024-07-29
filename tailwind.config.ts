@@ -1,13 +1,13 @@
-import type { Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
 
-const config = {
+const config: Config = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-	],
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -52,6 +52,19 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        khaki: {
+          "100": "#fffaa0",
+          "200": "#fff87f",
+          "300": "#fff078",
+        },
+        black: "#000",
+        gray: {
+          "100": "#898989",
+          "200": "#7a7a7a",
+        },
+        wheat: "#e3deb2",
+        gold: "#fff761",
+        silver: "#c8c8c8",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -72,9 +85,33 @@ const config = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      fontFamily: {
+        "itc-franklin-gothic-std": "'ITC Franklin Gothic Std'",
+        din: "DIN",
+        "eb-garamond": "'EB Garamond'",
+        dinpro: "DINPro",
+      },
+    },
+    fontSize: {
+      lg: "18px",
+      sm: "14px",
+      xl: "20px",
+      base: "16px",
+      inherit: "inherit",
+    },
+    screens: {
+      mq600: {
+        raw: "screen and (max-width: 600px)",
+      },
+      mq450: {
+        raw: "screen and (max-width: 450px)",
+      },
     },
   },
+  corePlugins: {
+    preflight: false,
+  },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config
+};
 
-export default config
+export default config;
