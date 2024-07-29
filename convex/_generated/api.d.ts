@@ -14,6 +14,8 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as ResendOTP from "../ResendOTP.js";
+import type * as ResendProvider from "../ResendProvider.js";
 import type * as auth from "../auth.js";
 import type * as books from "../books.js";
 import type * as books_preprocessing from "../books_preprocessing.js";
@@ -31,6 +33,8 @@ import type * as processImage from "../processImage.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  ResendOTP: typeof ResendOTP;
+  ResendProvider: typeof ResendProvider;
   auth: typeof auth;
   books: typeof books;
   books_preprocessing: typeof books_preprocessing;

@@ -15,7 +15,7 @@ export default function Layout({ children }: LayoutProps) {
         <Login />
       </Unauthenticated>
       <Authenticated>
-        <Navbar />
+        {/* <Navbar /> */}
         <main>{children}</main>
       </Authenticated>
     </div>
