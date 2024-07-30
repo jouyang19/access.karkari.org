@@ -286,19 +286,14 @@ export const getPages = query({
       `Fetching pages starting from ${startPage}, ${pagesPerView} pages`
     );
 
-    // Always start from page 1 or the requested start page, whichever is lower
-    const actualStartPage = Math.min(startPage, 1);
+    // Always start from page 1 or the requested start page, whichever is higher
+    const actualStartPage = Math.max(startPage, 1);
 
     let pages = await ctx.db
       .query("books")
       .filter((q) => q.gte(q.field("pageNumber"), actualStartPage))
-      .collect();
-
-    // Sort the pages manually
-    pages.sort((a, b) => a.pageNumber - b.pageNumber);
-
-    // Take the required number of pages
-    pages = pages.slice(0, pagesPerView + 1);
+      .order("desc")
+      .take(pagesPerView + 1);
 
     console.log(`Fetched ${pages.length} pages`);
     console.log(

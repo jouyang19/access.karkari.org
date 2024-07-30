@@ -51,13 +51,11 @@ export default function Reader() {
   const handleNextPage = useCallback(() => {
     console.log("Next Page clicked. Current page:", currentPage);
     if (pagesResult && pagesResult.hasMore) {
-      setCurrentPage((prev) => {
-        const newPage = prev + pagesPerView;
-        console.log("New page after Next:", newPage);
-        return newPage;
-      });
+      const nextStartPage = pagesResult.endCursor + 1;
+      setCurrentPage(nextStartPage);
+      console.log("New page after Next:", nextStartPage);
     }
-  }, [currentPage, pagesResult, pagesPerView]);
+  }, [pagesResult]);
 
   if (!pagesResult || pagesResult.pages.length === 0) {
     console.log("Loading...");
