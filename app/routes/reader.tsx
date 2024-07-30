@@ -8,9 +8,7 @@
 //   pages: any;
 //   setPages: any;
 // };
-import { signOut } from "convex/auth";
-import { Button } from "@/components/ui/button";
-import { FunctionComponent } from "react";
+import { SignOut } from "~/components/auth/SignOut";
 
 export default function Reader() {
   return (
@@ -22,6 +20,7 @@ export default function Reader() {
             <div className="self-stretch flex flex-col items-start justify-start gap-[36px] max-w-full mq600:gap-[18px]">
               <div className="self-stretch bg-khaki-300 box-border flex flex-row items-start justify-start pt-[15px] px-[25px] pb-[7px] max-w-full z-[1] border-b-[1px] border-dashed border-wheat">
                 <div className="h-[60px] w-[600px] relative bg-khaki-300 box-border hidden max-w-full border-b-[1px] border-dashed border-wheat" />
+                <SignOut />
                 <a className="[text-decoration:none] w-[422px] relative leading-[35px] font-medium text-[inherit] inline-block shrink-0 max-w-full z-[2]">
                   The Foundations of the Karkariya Order
                 </a>
