@@ -1,6 +1,7 @@
 // File: convex/books.ts
 
 import { mutation, query } from "./_generated/server";
+
 import { v } from "convex/values";
 
 // export const getAllPageNumbers = query(async ({ db }) => {
@@ -83,8 +84,6 @@ export const getAllPageNumbers = query(async ({ db }) => {
   console.log(pageNumbers);
   return pageNumbers;
 });
-
-import { query } from "./_generated/server";
 
 export const pagesAnalysis = mutation(async ({ db }) => {
   // Retrieve all pageNumber values
@@ -272,5 +271,48 @@ export const updateChapterSectionFlagsUsingEvery = mutation({
         });
       }
     }
+  },
+});
+
+export const getPages = query({
+  args: {
+    startPage: v.number(),
+    pagesPerView: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const { startPage, pagesPerView } = args;
+
+    console.log(
+      `Fetching pages starting from ${startPage}, ${pagesPerView} pages`
+    );
+
+    // Always start from page 1 or the requested start page, whichever is lower
+    const actualStartPage = Math.min(startPage, 1);
+
+    let pages = await ctx.db
+      .query("books")
+      .filter((q) => q.gte(q.field("pageNumber"), actualStartPage))
+      .collect();
+
+    // Sort the pages manually
+    pages.sort((a, b) => a.pageNumber - b.pageNumber);
+
+    // Take the required number of pages
+    pages = pages.slice(0, pagesPerView + 1);
+
+    console.log(`Fetched ${pages.length} pages`);
+    console.log(
+      "Fetched pages:",
+      pages.map((p) => p.pageNumber)
+    );
+
+    const hasMore = pages.length > pagesPerView;
+    const pagesResult = pages.slice(0, pagesPerView);
+
+    return {
+      pages: pagesResult,
+      hasMore,
+      endCursor: pagesResult[pagesResult.length - 1]?.pageNumber,
+    };
   },
 });
