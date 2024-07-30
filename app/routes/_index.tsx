@@ -1,6 +1,8 @@
 import type { MetaFunction } from "@remix-run/node";
 import Layout from "~/components/Layout";
 import { Navigate } from "@remix-run/react";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { Login } from "~/components/LoginPage";
 
 // Website metadata
 export const meta: MetaFunction = () => {
@@ -15,8 +17,12 @@ export default function Index() {
   return (
     <>
       <Layout>
-        {/* Upon login, lead user to Reader.tsx route */}
-        <Navigate to="/reader" />
+        <Unauthenticated>
+          <Login />
+        </Unauthenticated>
+        <Authenticated>
+          <Navigate to="/reader" />
+        </Authenticated>
       </Layout>
     </>
   );
