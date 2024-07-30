@@ -13,12 +13,14 @@ import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import { useConvex } from "convex/react";
 import { api } from "convex/_generated/api";
+import { useNavigate } from "@remix-run/react";
 
 const emailSchema = z.string().email();
 const passwordSchema = z.string().min(8);
 const verificationCodeSchema = z.string().length(8); // Assuming 6-digit code
 
 export function LoginForm() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
@@ -65,6 +67,7 @@ export function LoginForm() {
         console.log(`${step} process started`);
       } else if ("tokens" in result) {
         console.log(`${step} successful`);
+        navigate("/reader");
         // Handle successful sign-in/sign-up (e.g., redirect or update app state)
       }
     } catch (error) {

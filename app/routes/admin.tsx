@@ -13,7 +13,7 @@ interface UploadResult {
   message: string;
 }
 
-export default function FileUploadComponent() {
+function FileUploadComponent() {
   const [bookTitle, setBookTitle] = useState<string>("");
   const [uploadStatus, setUploadStatus] = useState<string>("");
   const [isUploading, setIsUploading] = useState<boolean>(false);

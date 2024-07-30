@@ -1,5 +1,7 @@
 import type { MetaFunction } from "@remix-run/node";
 import Layout from "~/components/Layout";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { Login } from "~/components/LoginPage";
 import { Navigate } from "@remix-run/react";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { Login } from "~/components/LoginPage";
