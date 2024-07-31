@@ -23,6 +23,7 @@ import type * as books_preprocessing_test from "../books_preprocessing_test.js";
 import type * as books_test from "../books_test.js";
 import type * as http from "../http.js";
 import type * as processImage from "../processImage.js";
+import type * as readers from "../readers.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   books_test: typeof books_test;
   http: typeof http;
   processImage: typeof processImage;
+  readers: typeof readers;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

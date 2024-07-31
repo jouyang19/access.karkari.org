@@ -42,6 +42,20 @@ export default defineSchema({
         originalLanguage: v.optional(v.string()),
       })
     ),
+  })
+    .index("by_bookTitle", ["bookTitleShort"])
+    .index("by_pageNumber", ["bookTitleShort", "pageNumber"]),
+  readers: defineTable({
+    isPaid: v.boolean(),
+    lastBookPage: v.array(
+      v.object({
+        bookTitle: v.string(),
+        pageNumber: v.float64(),
+      })
+    ),
+    sampleMonthBegin: v.float64(),
+    samplesRemaining: v.float64(),
+    userId: v.id("users"),
   }),
   books_preprocessing: defineTable({
     storageId: v.string(),

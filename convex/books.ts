@@ -1,6 +1,7 @@
 // File: convex/books.ts
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 
 export const getAll = query(async ({ db }) => {
   const books = await db.query("books").collect();
@@ -264,5 +265,24 @@ export const updateChapterSectionFlagsUsingEvery = mutation({
         });
       }
     }
+  },
+});
+
+export const getBookPages = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+    currentPage: v.number(),
+    currentBook: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("books")
+      .withIndex("by_pageNumber", (q) =>
+        q
+          .eq("bookTitleShort", args.currentBook)
+          .gt("pageNumber", args.currentPage)
+          .lt("pageNumber", args.currentPage + 3)
+      )
+      .paginate(args.paginationOpts);
   },
 });

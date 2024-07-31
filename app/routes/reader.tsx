@@ -8,25 +8,48 @@
 //   pages: any;
 //   setPages: any;
 // };
-import { Authenticated, Unauthenticated } from "convex/react";
-import { Login } from "~/components/LoginPage";
+
 import { SignOut } from "~/components/auth/SignOut";
 
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { useState, useEffect, useCallback } from "react";
+import { SignOut } from "~/components/auth/SignOut";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { Login } from "~/components/LoginPage";
+import { usePaginatedQuery } from "convex/react";
+import { paginationOptsValidator } from "convex/server";
+
 export default function Reader() {
+  const [currentPage, setCurrentPage] = useState(80);
+  const [currentBook, setCurrentBook] = useState("The Foundations");
+
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.books.getBookPages,
+    {
+      currentPage: currentPage,
+      currentBook: currentBook,
+    },
+    { initialNumItems: 2 }
+  );
+
+  console.log("Pagination results", results);
+  console.log("Pagination status", status);
+  console.log("Pagination loadMore", loadMore);
+
   return (
     <>
       <Unauthenticated>
         <Login />
       </Unauthenticated>
       <Authenticated>
-        <div className="w-full relative bg-khaki-100 overflow-hidden flex flex-row items-start h-screen justify-start leading-[normal] tracking-[normal]">
-          <section className="flex-1 flex flex-row flex-wrap items-start justify-start max-w-full [row-gap:20px] text-left text-lg text-black font-itc-franklin-gothic-std">
+        <div className="w-full relative bg-khaki-100 overflow-hidden flex flex-row items-start justify-start leading-[normal] tracking-[normal]">
+          <section className="flex-1 flex flex-row flex-wrap items-start justify-start max-w-full h-screen [row-gap:20px] text-left text-lg text-black font-itc-franklin-gothic-std">
             <div className="flex-1 bg-khaki-100 box-border flex flex-col items-end justify-start pt-0 px-0 pb-[15px] gap-[116px] min-w-[390px] max-w-full border-r-[3px] border-dashed border-gray-100 mq450:gap-[29px] mq450:min-w-full mq600:gap-[58px]">
               <div className="self-stretch h-[800px] relative bg-khaki-100 box-border hidden border-r-[3px] border-dashed border-gray-100" />
               <div className="self-stretch flex flex-col items-start justify-start gap-[36px] max-w-full mq600:gap-[18px]">
                 <div className="self-stretch bg-khaki-300 box-border flex flex-row items-start justify-start pt-[15px] px-[25px] pb-[7px] max-w-full z-[1] border-b-[1px] border-dashed border-wheat">
                   <div className="h-[60px] w-[600px] relative bg-khaki-300 box-border hidden max-w-full border-b-[1px] border-dashed border-wheat" />
-                  <SignOut />
                   <a className="[text-decoration:none] w-[422px] relative leading-[35px] font-medium text-[inherit] inline-block shrink-0 max-w-full z-[2]">
                     The Foundations of the Karkariya Order
                   </a>
@@ -54,9 +77,6 @@ export default function Reader() {
                         Faouzi b. Ṭayyib al-Karkarī – may God sanctify his
                         secret – of noble Prophetic descent, through Idrīsī and
                         Ḥasanī lineage.
-                        <span class="inline align-super text-xs border rounded-[5px] border-dashed bg-gold border-green-500 px-1 text-sm font-dinpro font-bold">
-                          143
-                        </span>
                       </p>
                       <p className="m-0">&nbsp;</p>
                     </div>
@@ -69,9 +89,9 @@ export default function Reader() {
                   </div>
                 </div>
               </div>
-              <div className="self-stretch flex flex-row items-start justify-end py-0 pr-[29px] pl-9 box-border max-w-full">
+              <div className="self-stretch flex flex-row items-start  justify-end py-0 pr-[29px] pl-9 box-border max-w-full">
                 <div className="flex-1 flex flex-row items-start justify-start max-w-full [row-gap:20px] mq600:flex-wrap">
-                  <div className="flex-1 flex flex-col items-start justify-start pt-2 px-0 pb-0 box-border min-w-[235px] max-w-full text-base">
+                  <div className="flex-1 flex flex-col items-start  h-screen justify-start pt-2 px-0 pb-0 box-border min-w-[235px] max-w-full text-base">
                     <div className="flex flex-row items-start justify-start">
                       <div className="relative leading-[28px] font-medium inline-block min-w-[74px] z-[1]">
                         Footnotes
