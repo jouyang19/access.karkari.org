@@ -16,12 +16,12 @@ import { api } from "../../convex/_generated/api";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { SignOut } from "~/components/auth/SignOut";
 import { Authenticated, Unauthenticated } from "convex/react";
-import { Login } from "~/components/LoginPage";
 import { usePaginatedQuery } from "convex/react";
 import { paginationOptsValidator } from "convex/server";
 import { auth } from "convex/auth";
 import { useNavigate } from "@remix-run/react";
 import React from "react";
+import { Login } from "~/components/LoginPage";
 
 const formatPageContent = (content: string) => {
   return content.split("[p]").map((paragraph, index) => (
@@ -150,7 +150,8 @@ export default function Reader() {
               <div className="self-stretch flex flex-col items-start justify-start gap-[36px] max-w-full mq600:gap-[18px]">
                 <div className="self-stretch bg-khaki-300 box-border flex flex-row items-start justify-start pt-[15px] px-[25px] pb-[7px] max-w-full z-[1] border-b-[1px] border-dashed border-wheat">
                   <div className="h-[60px] w-[600px] relative bg-khaki-300 box-border hidden max-w-full border-b-[1px] border-dashed border-wheat" />
-                  <a className="[text-decoration:none] w-[422px] relative leading-[35px] font-medium text-[inherit] inline-block shrink-0 max-w-full z-[2]">
+                  <SignOut />
+                  <a className="[text-decoration:none] w-[422px] relative leading-[35px] font-medium text-[inherit] inline-block shrink-0 max-w-full z-[2] font-itc-franklin-gothic-std">
                     The Foundations of the Karkariya Order
                   </a>
                 </div>
@@ -158,7 +159,7 @@ export default function Reader() {
                   <div className="h-[533px] flex-1 relative max-w-full overflow-hidden">
                     <div
                       ref={leftPageRef}
-                      className="absolute top-[0px] left-[0px] leading-[1.5] inline-block w-full h-full z-[1]"
+                      className="absolute top-[0px] left-[0px] leading-[1.5] inline-block w-full h-full z-[1] font-serif"
                     >
                       {leftPage && leftPage.pageContent ? (
                         formatPageContent(leftPage.pageContent)
@@ -199,7 +200,7 @@ export default function Reader() {
                     </div>
                   </div>
                   <div className="flex flex-col items-start justify-start pt-1.5 px-0 pb-0 ml-[-13px]">
-                    <div className="relative leading-[35px] font-medium inline-block min-w-[25px] z-[1]">
+                    <div className="relative leading-[35px] font-medium inline-block min-w-[25px] z-[1] font-serif">
                       {leftPage && leftPage.pageNumber
                         ? leftPage.pageNumber
                         : ""}
@@ -226,7 +227,7 @@ export default function Reader() {
                 <div className="self-stretch flex flex-row items-start justify-start py-0 pr-[73px] pl-[70px] box-border max-w-full shrink-0 text-xl font-eb-garamond mq600:pl-[35px] mq600:pr-9 mq600:box-border">
                   <div
                     ref={rightPageRef}
-                    className="h-[533px] flex-1 relative leading-[1.5] inline-block max-w-full z-[1] overflow-hidden"
+                    className="h-[533px] flex-1 relative leading-[1.5] font-eb-garamond inline-block max-w-full z-[1] overflow-hidden"
                   >
                     {rightPage && rightPage.pageContent ? (
                       formatPageContent(rightPage.pageContent)

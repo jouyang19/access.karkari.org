@@ -1,10 +1,8 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { GoogleLogo } from "../utils/GoogleLogo";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "@remix-run/react";
 
 export function SignInWithGoogle() {
-  const navigate = useNavigate();
   const { signIn } = useAuthActions();
 
   const handleSignIn = async () => {
