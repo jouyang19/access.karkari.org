@@ -11,18 +11,41 @@
 
 import { SignOut } from "~/components/auth/SignOut";
 
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { SignOut } from "~/components/auth/SignOut";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { Login } from "~/components/LoginPage";
 import { usePaginatedQuery } from "convex/react";
 import { paginationOptsValidator } from "convex/server";
+import { auth } from "convex/auth";
+import { useNavigate } from "@remix-run/react";
+import React from "react";
+
+const formatPageContent = (content: string) => {
+  return content.split("[p]").map((paragraph, index) => (
+    <React.Fragment key={index}>
+      {index > 0 && <br />}
+      <p style={{ textIndent: "2em", marginBottom: "1em" }}>
+        {paragraph.trim()}
+      </p>
+    </React.Fragment>
+  ));
+};
 
 export default function Reader() {
-  const [currentPage, setCurrentPage] = useState(80);
+  const [currentPage, setCurrentPage] = useState(24);
   const [currentBook, setCurrentBook] = useState("The Foundations");
+  const [leftPage, setLeftPage] = useState({});
+  const [rightPage, setRightPage] = useState({});
+  const leftPageRef = useRef(null);
+  const rightPageRef = useRef(null);
+
+  const currentReader = useQuery(api.readers.getReaderByUserId);
+  const updateReaderBookmark = useMutation(api.readers.updateReaderBookmark);
+
+  console.log("current reader", currentReader);
 
   const { results, status, loadMore } = usePaginatedQuery(
     api.books.getBookPages,
@@ -36,6 +59,83 @@ export default function Reader() {
   console.log("Pagination results", results);
   console.log("Pagination status", status);
   console.log("Pagination loadMore", loadMore);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!currentReader) return;
+
+    if (!currentReader.isPaid) {
+      navigate("/sample");
+    } else {
+      const readerBookmarkArr = currentReader.lastBookPage.find(
+        (book) => book.bookTitle === currentBook
+      );
+      if (readerBookmarkArr) {
+        const bookmarkedPage = readerBookmarkArr.pageNumber;
+        setCurrentPage(bookmarkedPage);
+      }
+    }
+  }, [currentReader, currentBook, navigate]);
+
+  useEffect(() => {
+    if (results && results.length >= 2) {
+      setLeftPage(results[0]);
+      setRightPage(results[1]);
+    }
+  }, [results]);
+
+  const handleNextPage = useCallback(() => {
+    const newPage = currentPage + 2;
+    setCurrentPage(newPage);
+    loadMore();
+    if (currentReader) {
+      updateReaderBookmark({
+        pageNumber: newPage,
+        readerId: currentReader._id,
+        bookTitle: currentBook,
+      });
+    }
+  }, [currentPage, loadMore, currentReader, updateReaderBookmark, currentBook]);
+
+  const handlePreviousPage = useCallback(() => {
+    const newPage = Math.max(currentPage - 2, 1);
+    setCurrentPage(newPage);
+    loadMore();
+    if (currentReader) {
+      updateReaderBookmark({
+        pageNumber: newPage,
+        readerId: currentReader._id,
+        bookTitle: currentBook,
+      });
+    }
+  }, [currentPage, loadMore, currentReader, updateReaderBookmark, currentBook]);
+
+  const adjustFontSize = useCallback((element) => {
+    if (!element) return;
+
+    const maxHeight = element.clientHeight;
+    let fontSize = 16; // starting font size
+    element.style.fontSize = fontSize + "px";
+
+    while (element.scrollHeight > maxHeight && fontSize > 8) {
+      fontSize--;
+      element.style.fontSize = fontSize + "px";
+    }
+  }, []);
+
+  useEffect(() => {
+    adjustFontSize(leftPageRef.current);
+    adjustFontSize(rightPageRef.current);
+  }, [leftPage, rightPage, adjustFontSize]);
+
+  if (!currentReader) {
+    return <div>Loading...</div>;
+  }
+
+  if (!currentReader.isPaid) {
+    return null;
+  }
 
   return (
     <>
@@ -55,36 +155,16 @@ export default function Reader() {
                   </a>
                 </div>
                 <div className="self-stretch flex flex-row items-start justify-start py-0 px-[73px] box-border max-w-full text-xl font-eb-garamond mq600:pl-9 mq600:pr-9 mq600:box-border">
-                  <div className="h-[533px] flex-1 relative max-w-full">
-                    <div className="absolute top-[0px] left-[0px] leading-[35px] inline-block w-full h-full z-[1] mq450:text-base mq450:leading-[28px]">
-                      <p className="m-0">
-                        He is the sun of knowledge, the meeting of the two seas,
-                        the ocean of gnosis, the inmost heart of the spirit, the
-                        red sulphur, the inheritor of the secret of the essence,
-                        and the guide upon the Path of unveiling. He is the
-                        spiritual trainer, Shaykh Abū ʿAbd Allāh, Sīdī Mohamed
-                        Faouzi b. Ṭayyib al-Karkarī – may God sanctify his
-                        secret – of noble Prophetic descent, through Idrīsī and
-                        Ḥasanī lineage.
-                      </p>
-                      <p className="m-0">&nbsp;</p>
-                      <p className="m-0">
-                        He is the sun of knowledge, the meeting of the two seas,
-                        the ocean of gnosis, the inmost heart of the spirit, the
-                        red sulphur, the inheritor of the secret of the essence,
-                        and the guide upon the Path of unveiling. He is the
-                        spiritual trainer, Shaykh Abū ʿAbd Allāh, Sīdī Mohamed
-                        Faouzi b. Ṭayyib al-Karkarī – may God sanctify his
-                        secret – of noble Prophetic descent, through Idrīsī and
-                        Ḥasanī lineage.
-                      </p>
-                      <p className="m-0">&nbsp;</p>
-                    </div>
-                    <div className="absolute top-[35px] left-[409px] w-[39px] h-[31px] text-sm font-dinpro">
-                      <div className="absolute top-[6px] left-[0px] rounded-[5px] bg-gold box-border w-[39px] h-[27px] z-[2] border-[1px] border-dashed border-black" />
-                      <a className="[text-decoration:none] absolute top-[0px] left-[6px] leading-[30px] font-bold text-[inherit] inline-block w-[33px] h-[30px] z-[3]">
-                        143
-                      </a>
+                  <div className="h-[533px] flex-1 relative max-w-full overflow-hidden">
+                    <div
+                      ref={leftPageRef}
+                      className="absolute top-[0px] left-[0px] leading-[1.5] inline-block w-full h-full z-[1]"
+                    >
+                      {leftPage && leftPage.pageContent ? (
+                        formatPageContent(leftPage.pageContent)
+                      ) : (
+                        <p>This Page is Intentionally Left Blank</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -105,16 +185,24 @@ export default function Reader() {
                     </div>
                   </div>
                   <div className="w-[175px] flex flex-row items-start justify-start ml-[-13px] font-din">
-                    <b className="h-[39px] w-[26px] relative leading-[35px] inline-block shrink-0 z-[1]">{`<`}</b>
+                    <b
+                      className="h-[39px] w-[26px] relative leading-[35px] inline-block shrink-0 z-[1] cursor-pointer"
+                      onClick={handlePreviousPage}
+                    >{`<`}</b>
                     <div className="flex-1 flex flex-col items-start justify-start pt-[3px] px-0 pb-0 text-sm text-gray-200">
-                      <b className="self-stretch relative leading-[35px] z-[2]">
+                      <b
+                        className="self-stretch relative leading-[35px] z-[2] cursor-pointer"
+                        onClick={handlePreviousPage}
+                      >
                         PREVIOUS PAGE
                       </b>
                     </div>
                   </div>
                   <div className="flex flex-col items-start justify-start pt-1.5 px-0 pb-0 ml-[-13px]">
                     <div className="relative leading-[35px] font-medium inline-block min-w-[25px] z-[1]">
-                      43
+                      {leftPage && leftPage.pageNumber
+                        ? leftPage.pageNumber
+                        : ""}
                     </div>
                   </div>
                 </div>
@@ -127,36 +215,24 @@ export default function Reader() {
                   <div className="h-[60px] w-[597px] relative bg-khaki-300 box-border hidden max-w-full border-b-[1px] border-dashed border-wheat" />
                   <div className="w-[230.2px] relative leading-[28px] inline-block shrink-0 z-[1]">
                     <span>{`CHAPTER: `}</span>
-                    <span className="font-medium">The Pact (al-Ahd)</span>
+                    <span className="font-medium">
+                      {rightPage.chapter?.title || "N/A"}
+                    </span>
                   </div>
                   <a className="[text-decoration:none] relative leading-[28px] font-medium text-[inherit] z-[1]">
-                    The Pact (al-Ahd)
+                    {rightPage.chapter?.sectionTitle || "N/A"}
                   </a>
                 </div>
                 <div className="self-stretch flex flex-row items-start justify-start py-0 pr-[73px] pl-[70px] box-border max-w-full shrink-0 text-xl font-eb-garamond mq600:pl-[35px] mq600:pr-9 mq600:box-border">
-                  <div className="h-[533px] flex-1 relative leading-[35px] inline-block max-w-full z-[1] mq450:text-base mq450:leading-[28px]">
-                    <p className="m-0">
-                      He is the sun of knowledge, the meeting of the two seas,
-                      the ocean of gnosis, the inmost heart of the spirit, the
-                      red sulphur, the inheritor of the secret of the essence,
-                      and the guide upon the Path of unveiling. He is the
-                      spiritual trainer, Shaykh Abū ʿAbd Allāh, Sīdī Mohamed
-                      Faouzi b. Ṭayyib al-Karkarī – may God sanctify his secret
-                      – of noble Prophetic descent, through Idrīsī and Ḥasanī
-                      lineage.
-                    </p>
-                    <p className="m-0">&nbsp;</p>
-                    <p className="m-0">
-                      He is the sun of knowledge, the meeting of the two seas,
-                      the ocean of gnosis, the inmost heart of the spirit, the
-                      red sulphur, the inheritor of the secret of the essence,
-                      and the guide upon the Path of unveiling. He is the
-                      spiritual trainer, Shaykh Abū ʿAbd Allāh, Sīdī Mohamed
-                      Faouzi b. Ṭayyib al-Karkarī – may God sanctify his secret
-                      – of noble Prophetic descent, through Idrīsī and Ḥasanī
-                      lineage.
-                    </p>
-                    <p className="m-0">&nbsp;</p>
+                  <div
+                    ref={rightPageRef}
+                    className="h-[533px] flex-1 relative leading-[1.5] inline-block max-w-full z-[1] overflow-hidden"
+                  >
+                    {rightPage && rightPage.pageContent ? (
+                      formatPageContent(rightPage.pageContent)
+                    ) : (
+                      <p>This Page is Intentionally Left Blank</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -164,7 +240,10 @@ export default function Reader() {
                 <div className="flex-1 flex flex-row items-start justify-start py-0 pr-[3px] pl-0">
                   <div className="flex-1 flex flex-row items-start justify-start shrink-0">
                     <div className="w-[149px] flex flex-col items-start justify-start pt-0.5 px-0 pb-0 box-border">
-                      <b className="self-stretch relative leading-[35px] z-[2]">
+                      <b
+                        className="self-stretch relative leading-[35px] z-[2] cursor-pointer"
+                        onClick={handleNextPage}
+                      >
                         NEXT PAGE
                       </b>
                     </div>
@@ -172,7 +251,9 @@ export default function Reader() {
                   </div>
                   <div className="flex flex-col items-start justify-start pt-[3px] px-0 pb-0 ml-[-23px] text-lg text-black font-itc-franklin-gothic-std">
                     <div className="relative leading-[35px] font-medium inline-block min-w-[19.9px] shrink-0 z-[1]">
-                      44
+                      {rightPage && rightPage.pageNumber
+                        ? rightPage.pageNumber
+                        : ""}
                     </div>
                   </div>
                 </div>
