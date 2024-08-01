@@ -24,14 +24,35 @@ import React from "react";
 import { Login } from "~/components/LoginPage";
 
 const formatPageContent = (content: string) => {
-  return content.split("[p]").map((paragraph, index) => (
-    <React.Fragment key={index}>
-      {index > 0 && <br />}
-      <p style={{ textIndent: "2em", marginBottom: "1em" }}>
-        {paragraph.trim()}
+  const paragraphs = content.split("[p]");
+
+  return paragraphs.map((paragraph, paragraphIndex) => {
+    const parts = paragraph.split(/(\[\[\d+\]\])/);
+
+    const formattedParagraph = parts.map((part, partIndex) => {
+      if (/^\[\[\d+\]\]$/.test(part)) {
+        const number = part.replace(/\[|\]/g, "");
+        return (
+          <span
+            key={`${paragraphIndex}-${partIndex}`}
+            className="inline align-super text-xs border rounded-[5px] border-dashed bg-gold border-green-500 px-1 text-sm font-dinpro font-bold"
+          >
+            {number}
+          </span>
+        );
+      }
+      return part;
+    });
+
+    return (
+      <p
+        key={paragraphIndex}
+        style={{ textIndent: "2em", marginBottom: "1em" }}
+      >
+        {formattedParagraph}
       </p>
-    </React.Fragment>
-  ));
+    );
+  });
 };
 
 export default function Reader() {
@@ -129,6 +150,50 @@ export default function Reader() {
     adjustFontSize(rightPageRef.current);
   }, [leftPage, rightPage, adjustFontSize]);
 
+  const totalFootnotes =
+    (leftPage?.footnotes?.length || 0) + (rightPage?.footnotes?.length || 0);
+
+  const formatPageContent = (
+    content: string,
+    footnotes: Array<{ content: string; number: number }>
+  ) => {
+    const paragraphs = content.split("[p]");
+
+    return paragraphs.map((paragraph, paragraphIndex) => {
+      const parts = paragraph.split(/(\[\[\d+\]\])/);
+
+      const formattedParagraph = parts.map((part, partIndex) => {
+        if (/^\[\[\d+\]\]$/.test(part)) {
+          const number = part.replace(/\[|\]/g, "");
+          const footnoteIndex = parseInt(number);
+          const footnote = footnotes.find((f) => f.number === footnoteIndex);
+          const footnoteContent = footnote
+            ? footnote.content
+            : "Footnote content not found";
+          return (
+            <span
+              key={`${paragraphIndex}-${partIndex}`}
+              className="inline align-super text-xs border rounded-[5px] border-dashed bg-gold border-green-500 px-1 text-sm font-dinpro font-bold cursor-pointer"
+              onClick={() => alert(`Footnote ${number}: ${footnoteContent}`)}
+            >
+              {number}
+            </span>
+          );
+        }
+        return part;
+      });
+
+      return (
+        <p
+          key={paragraphIndex}
+          style={{ textIndent: "2em", marginBottom: "1em" }}
+        >
+          {formattedParagraph}
+        </p>
+      );
+    });
+  };
+
   if (!currentReader) {
     return <div>Loading...</div>;
   }
@@ -162,7 +227,10 @@ export default function Reader() {
                       className="absolute top-[0px] left-[0px] leading-[1.5] inline-block w-full h-full z-[1] font-serif"
                     >
                       {leftPage && leftPage.pageContent ? (
-                        formatPageContent(leftPage.pageContent)
+                        formatPageContent(
+                          leftPage.pageContent,
+                          leftPage.footnotes || []
+                        )
                       ) : (
                         <p>This Page is Intentionally Left Blank</p>
                       )}
@@ -177,12 +245,14 @@ export default function Reader() {
                       <div className="relative leading-[28px] font-medium inline-block min-w-[74px] z-[1]">
                         Footnotes
                       </div>
-                      <div className="h-[29px] w-7 relative text-sm">
-                        <div className="absolute top-[1px] left-[0px] rounded-[50%] bg-gold box-border w-full h-full z-[2] border-[0px] border-dashed border-silver" />
-                        <div className="absolute top-[0px] left-[9px] leading-[35px] font-medium inline-block w-3 h-[17px] min-w-[12px] z-[3]">
-                          4
+                      {totalFootnotes > 0 && (
+                        <div className="h-[29px] w-7 relative text-sm">
+                          <div className="absolute top-[1px] left-[0px] rounded-[50%] bg-gold box-border w-full h-full z-[2] border-[0px] border-dashed border-silver" />
+                          <div className="absolute top-[0px] left-[9px] leading-[35px] font-medium inline-block w-3 h-[17px] min-w-[12px] z-[3]">
+                            {totalFootnotes}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                   <div className="w-[175px] flex flex-row items-start justify-start ml-[-13px] font-din">
@@ -230,7 +300,10 @@ export default function Reader() {
                     className="h-[533px] flex-1 relative leading-[1.5] font-eb-garamond inline-block max-w-full z-[1] overflow-hidden"
                   >
                     {rightPage && rightPage.pageContent ? (
-                      formatPageContent(rightPage.pageContent)
+                      formatPageContent(
+                        rightPage.pageContent,
+                        rightPage.footnotes || []
+                      )
                     ) : (
                       <p>This Page is Intentionally Left Blank</p>
                     )}
