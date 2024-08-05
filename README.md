@@ -12,7 +12,7 @@ The e-reader aims to:
 2. Offer an all-you-can-read subscription membership model.
 3. Make the Shaykh's teachings accessible in multiple languages.
 
-![E-Reader Demo Image](public/readme_reader.jpeg)
+![E-Reader Demo Image](public/readme_1.jpeg)
 
 ## Features
 
