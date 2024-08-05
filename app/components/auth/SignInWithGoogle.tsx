@@ -12,7 +12,7 @@ export function SignInWithGoogle() {
       console.error("Sign in failed:", error);
     }
   };
-
+  
   return (
     <Button className="" variant="outline" type="button" onClick={handleSignIn}>
       <GoogleLogo className="mr-2 h-4 w-4" /> Google

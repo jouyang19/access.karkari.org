@@ -1,40 +1,79 @@
-# Welcome to Remix!
+# Al-Karkari Institute E-Reader
 
-- 📖 [Remix docs](https://remix.run/docs)
+This project is a Kindle-like e-reader experience for the Al-Karkari Institute, designed to make the teachings of Shaykh Mohamed Faouzi Al-Karkari available to a global audience of academics and laymen in multiple languages.
 
-## Development
+![Al-Karkari Institute Logo](public/institute-logo.png)
 
-Run the dev server:
+## Purpose
 
-```shellscript
-npm run dev
-```
+The e-reader aims to:
+
+1. Provide a beautiful reading experience on desktop, mobile, and tablet devices.
+2. Offer an all-you-can-read subscription membership model.
+3. Make the Shaykh's teachings accessible in multiple languages.
+
+![E-Reader Demo Image](public/readme_reader.jpeg)
+
+## Features
+
+- User authentication
+- Responsive design for various devices
+- Pagination with left and right pages
+- Footnote display
+- Chapter and section navigation
+
+## Technology Stack
+
+- Remix
+- Convex
+- React
+- TypeScript
+- Tailwind CSS
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies:
+   ```
+   npm install
+   ```
+3. Set up environment variables:
+   Create a `.env` file in the root directory and add:
+
+   ```
+   CONVEX_URL=your_convex_url_here
+   ```
+
+4. Run the development server:
+   ```
+   npm run dev
+   ```
 
 ## Deployment
 
-First, build your app for production:
+To deploy the app:
 
-```sh
-npm run build
-```
+1. Build for production:
 
-Then run the app in production mode:
+   ```
+   npm run build
+   ```
 
-```sh
-npm start
-```
+2. Start the production server:
+   ```
+   npm start
+   ```
 
-Now you'll need to pick a host to deploy it to.
+## Project Structure
 
-### DIY
+- `app/routes/reader.tsx`: Main e-reader component
+- `app/components/LoginPage.tsx`: Authentication component
+- `convex/`: Backend functions and database schema
 
-If you're familiar with deploying Node applications, the built-in Remix app server is production-ready.
+## Contributing
 
-Make sure to deploy the output of `npm run build`
+Contributions are welcome. Please ensure you follow the existing code style and add tests for new features.
 
-- `build/server`
-- `build/client`
+## License
 
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever css framework you prefer. See the [Vite docs on css](https://vitejs.dev/guide/features.html#css) for more information.
+[Add your license information here]
