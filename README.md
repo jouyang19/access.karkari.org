@@ -30,7 +30,7 @@ The e-reader aims to:
 - TypeScript
 - Tailwind CSS
 - Figma
-- Python (for pdf parsing)
+- Python (for pdf parsing, not included)
 
 ## Getting Started
 
