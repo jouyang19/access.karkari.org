@@ -1,6 +1,6 @@
 # Al-Karkari Institute E-Reader
 
-This project is a Kindle-like e-reader experience for the Al-Karkari Institute, designed to make the teachings of Shaykh Mohamed Faouzi Al-Karkari available to a global audience of academics and laymen in multiple languages.
+This project is a Kindle-like e-reader experience for our client, the Al-Karkari Institute, designed to make the teachings of Shaykh Mohamed Faouzi Al-Karkari available to a global audience of academics and laymen in multiple languages.
 
 ![Al-Karkari Institute Logo](public/institute-logo.png)
 
