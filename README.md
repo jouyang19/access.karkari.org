@@ -29,6 +29,8 @@ The e-reader aims to:
 - React
 - TypeScript
 - Tailwind CSS
+- Figma
+- Python (for pdf parsing)
 
 ## Getting Started
 
