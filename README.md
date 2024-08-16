@@ -72,10 +72,3 @@ To deploy the app:
 - `app/components/LoginPage.tsx`: Authentication component
 - `convex/`: Backend functions and database schema
 
-## Contributing
-
-Contributions are welcome. Please ensure you follow the existing code style and add tests for new features.
-
-## License
-
-[Add your license information here]
