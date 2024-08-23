@@ -31,6 +31,7 @@ The e-reader aims to:
 - Tailwind CSS
 - Figma
 - Python (for pdf parsing, not included)
+- Anthropic (for AI JSON Parsing of PDF, base prompt included)
 
 ## Getting Started
 
